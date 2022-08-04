@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "@onflow/fcl": "^1.1.1",
+    "@onflow/transport-grpc": "^1.1.1",
+    "@onflow/transport-http": "^1.4.0",
+    "@onflow/types": "1.0.3",
+    "bignumber.js": "^9.0.1",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.0.1",
+    "heap": "^0.2.7",
+    "https-proxy-agent": "^5.0.1",
+    "log-timestamp": "^0.3.0",
+    "node-fetch": "^2.6.2",
+    "sha2": "^1.0.2",
+    "sha3": "^2.1.4",
+    "ws": "^8.8.1"
+  }
+}

@@ -1,0 +1,13 @@
+{
+    "Network": "testnet",
+    "AccessNodeType": "http",
+    "AccessNode": {
+        "testnet": "https://access-testnet.onflow.org",
+        "mainnet": {
+            "grpc": "https://access-mainnet-beta.onflow.org",
+            "http": "https://rest-mainnet.onflow.org"
+        }
+    },
+        
+    "HttpProxy": true
+}
