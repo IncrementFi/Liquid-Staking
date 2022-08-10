@@ -4,7 +4,7 @@ import FlowToken from "../../contracts/standard/FlowToken.cdc"
 
 transaction() {
     prepare(account: AuthAccount) {
-        let delegator <- FlowIDTableStaking.registerNewDelegator(nodeID: "execute-node-1")
+        let delegator <- FlowIDTableStaking.registerNewDelegator(nodeID: "node-3-1")
 
         let flowVault = account.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)!
 

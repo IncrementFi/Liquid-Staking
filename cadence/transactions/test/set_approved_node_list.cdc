@@ -8,9 +8,9 @@ transaction() {
             ?? panic("Could not borrow reference to staking admin")
         
         let nodeIDs = [
-            "execute-node-1",
-            "execute-node-2",
-            "collection-node-1"
+            "node-3-1",
+            "node-3-2",
+            "node-1-1"
         ]
         adminRef.setApprovedList(nodeIDs)
     }

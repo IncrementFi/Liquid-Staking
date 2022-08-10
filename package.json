@@ -1,5 +1,11 @@
 {
+  "scripts": {
+    "setupepoch": "python3 ./utils/deployment/SetupEpochEnvOnEmulator.py",
+    "nextepoch": "flow transactions send ./cadence/transactions/test/next_epoch.cdc"
+  },
   "dependencies": {
+    "@babel/core": "^7.18.10",
+    "@babel/preset-env": "^7.18.10",
     "@onflow/fcl": "^1.1.1",
     "@onflow/transport-grpc": "^1.1.1",
     "@onflow/transport-http": "^1.4.0",

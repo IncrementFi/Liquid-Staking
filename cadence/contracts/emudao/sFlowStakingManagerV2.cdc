@@ -13,8 +13,8 @@ import FlowToken from 0x1654653399040a61
 import FlowStakingCollection from 0x8d0e87b65159ae63
 import FlowIDTableStaking from 0x8624b52f9ddcd04a
 
-pub contract sFlowStakingManagerV3 {
-	access(contract) var unstakeRequests: [UnstakeRequest]
+pub contract sFlowStakingManagerV2 {
+	access(contract) var unstakeRequests: [{String: AnyStruct}]
 	access(contract) var poolFee: UFix64
 	access(contract) var nodeID: String
 	access(contract) var delegatorID: UInt32
@@ -26,23 +26,13 @@ pub contract sFlowStakingManagerV3 {
 	pub event StakeFastWithdrawn(amount: UFix64)
 	pub event FeesTaken(amount: UFix64)
 
-	pub struct UnstakeRequest {
-        pub let address: Address
-        pub let amount: UFix64
-
-        init(address: Address, amount: UFix64) {
-            self.address = address
-            self.amount = amount
-        }
-    }
-
 	// getters
 	pub fun getPoolFee(): UFix64 {
-		return sFlowStakingManagerV3.poolFee
+		return sFlowStakingManagerV2.poolFee
 	}
 
 	pub fun getNodeId(): String {
-		return sFlowStakingManagerV3.nodeID
+		return sFlowStakingManagerV2.nodeID
 	}
 
 	pub fun getDelegatorId(): UInt32 {
@@ -57,7 +47,7 @@ pub contract sFlowStakingManagerV3 {
 		return self.prevDelegatorID
 	}
 
-	pub fun getUnstakeRequests(): [UnstakeRequest] {
+	pub fun getUnstakeRequests(): [{String: AnyStruct}] {
 		return self.unstakeRequests
 	}
 
@@ -192,7 +182,7 @@ pub contract sFlowStakingManagerV3 {
 			unstakerReceiverRef.deposit(from: <- managerFlowVault)
 
 			// Burn sFlow tokens
-			let tokensToBurn <- from.withdraw(amount: fastUnstakeAmount / sFlowPrice)
+			let tokensToBurn <- from.withdraw(amount: fastUnstakeAmount)
 			let tokensToKeep <- from
 
 			managersFlowTokenVault.deposit(from: <- tokensToKeep)
@@ -211,7 +201,7 @@ pub contract sFlowStakingManagerV3 {
 		// "fastUnstaked". We create an unstakeRequest ticket to be
 		// processed on the next epoch
 		if (notAvailableForFastUnstake > 0.0) {
-			self.unstakeRequests.append(UnstakeRequest(address: accountAddress, amount: UFix64(notAvailableForFastUnstake)))
+			self.unstakeRequests.append({"address": accountAddress, "amount": notAvailableForFastUnstake })
 		
 			let stakingCollectionRef = self.borrowStakingCollection()
 			stakingCollectionRef.requestUnstaking(nodeID: self.nodeID, delegatorID: self.delegatorID, amount: UFix64(notAvailableForFastUnstake))
@@ -239,9 +229,14 @@ pub contract sFlowStakingManagerV3 {
 			stakingCollectionRef.withdrawUnstakedTokens(nodeID: self.nodeID, delegatorID: self.delegatorID, amount: delegatorInfo.tokensUnstaked)
 		}
 
-		for index, request in self.unstakeRequests {
-			let stakingAccount = getAccount(request.address)
-			let requestAmount = request.amount
+
+		var index = 0
+		for request in self.unstakeRequests {
+			let tempAddress: AnyStruct = request["address"]!
+			let accountAddress: Address = tempAddress as! Address
+			let stakingAccount = getAccount(accountAddress)
+			let tempAmount: AnyStruct = request["amount"]!
+			let requestAmount: UFix64 = tempAmount as! UFix64
 
 			let withdrawAmount = requestAmount * self.getsFlowPrice()
 
@@ -257,11 +252,14 @@ pub contract sFlowStakingManagerV3 {
 				unstakerReceiverRef.deposit(from: <- flowVault)
 				managersFlowTokenBurnerVault.burnTokens(from: <- burnVault)
 
-				self.unstakeRequests.removeFirst()
+				self.unstakeRequests.remove(at: index)
 				emit StakeWithdrawn(amount: withdrawAmount)
 			}
-		}
 
+			index = index + 1
+
+			
+		}
 
 	}
 
@@ -273,34 +271,34 @@ pub contract sFlowStakingManagerV3 {
         }
 
         pub fun setNewDelegator(nodeID: String, delegatorID: UInt32){
-            if(nodeID == sFlowStakingManagerV3.nodeID){
+            if(nodeID == sFlowStakingManagerV2.nodeID){
                 panic("Node id is same")
             }
 
-            sFlowStakingManagerV3.prevNodeID = sFlowStakingManagerV3.nodeID
-            sFlowStakingManagerV3.prevDelegatorID = sFlowStakingManagerV3.delegatorID
-            sFlowStakingManagerV3.nodeID = nodeID
-            sFlowStakingManagerV3.delegatorID = delegatorID
+            sFlowStakingManagerV2.prevNodeID = sFlowStakingManagerV2.nodeID
+            sFlowStakingManagerV2.prevDelegatorID = sFlowStakingManagerV2.delegatorID
+            sFlowStakingManagerV2.nodeID = nodeID
+            sFlowStakingManagerV2.delegatorID = delegatorID
         }
 
         pub fun setPoolFee(amount: UFix64){
-            sFlowStakingManagerV3.poolFee = amount
+            sFlowStakingManagerV2.poolFee = amount
         }
 
         pub fun registerNewDelegator(id: String, amount: UFix64){
-            let stakingCollectionRef: &FlowStakingCollection.StakingCollection = sFlowStakingManagerV3.account.borrow<&FlowStakingCollection.StakingCollection>(from: FlowStakingCollection.StakingCollectionStoragePath)
+            let stakingCollectionRef: &FlowStakingCollection.StakingCollection = sFlowStakingManagerV2.account.borrow<&FlowStakingCollection.StakingCollection>(from: FlowStakingCollection.StakingCollectionStoragePath)
                 ?? panic("Could not borrow ref to StakingCollection")
             stakingCollectionRef.registerDelegator(nodeID: id, amount: amount)
         }
 
         pub fun unstakeAll(nodeId: String, delegatorId: UInt32){
-            let delegatingInfo = FlowStakingCollection.getAllDelegatorInfo(address: sFlowStakingManagerV3.account.address);
+            let delegatingInfo = FlowStakingCollection.getAllDelegatorInfo(address: sFlowStakingManagerV2.account.address);
             if delegatingInfo.length == 0 {
                 panic("No Delegating Information")
             }
             for info in delegatingInfo {
                 if (info.nodeID == nodeId && info.id == delegatorId){
-                    let stakingCollectionRef: &FlowStakingCollection.StakingCollection = sFlowStakingManagerV3.account.borrow<&FlowStakingCollection.StakingCollection>(from: FlowStakingCollection.StakingCollectionStoragePath)
+                    let stakingCollectionRef: &FlowStakingCollection.StakingCollection = sFlowStakingManagerV2.account.borrow<&FlowStakingCollection.StakingCollection>(from: FlowStakingCollection.StakingCollectionStoragePath)
                         ?? panic("Could not borrow ref to StakingCollection")
                     if(info.tokensCommitted > 0.0 || info.tokensStaked > 0.0){
                         stakingCollectionRef.requestUnstaking(nodeID: nodeId, delegatorID: delegatorId, amount: info.tokensCommitted + info.tokensStaked)
@@ -328,11 +326,11 @@ pub contract sFlowStakingManagerV3 {
         self.prevDelegatorID = 0
 
         /// create a single admin collection and store it
-        self.account.save(<-create Manager(), to: /storage/sFlowStakingManagerV3)
+        self.account.save(<-create Manager(), to: /storage/sFlowStakingManagerV2)
         
-        self.account.link<&sFlowStakingManagerV3.Manager>(
-            /private/sFlowStakingManagerV3,
-            target: /storage/sFlowStakingManagerV3
+        self.account.link<&sFlowStakingManagerV2.Manager>(
+            /private/sFlowStakingManagerV2,
+            target: /storage/sFlowStakingManagerV2
         ) ?? panic("Could not get a capability to the manager")
 
     }

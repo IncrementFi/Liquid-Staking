@@ -1,7 +1,8 @@
 {
-    "Network": "testnet",
-    "AccessNodeType": "http",
+    "Network": "emulator",
+    "AccessNodeType": "grpc",
     "AccessNode": {
+        "emulator": "http://localhost:8080",
         "testnet": "https://access-testnet.onflow.org",
         "mainnet": {
             "grpc": "https://access-mainnet-beta.onflow.org",

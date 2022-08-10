@@ -1,5 +1,5 @@
 import FlowEpoch from "../../contracts/flow/FlowEpoch.cdc"
-import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
+//import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
 pub fun main(): AnyStruct {
     let curEpochCounter = FlowEpoch.currentEpochCounter
     let curEpochPhase = FlowEpoch.currentEpochPhase
@@ -14,8 +14,7 @@ pub fun main(): AnyStruct {
         //"cur epoch data": epochData0,
         //"nxt epoch data": epochData1,
         "block view": getCurrentBlock().view,
-        "state": curEpochPhase,
-        "cut": FlowIDTableStaking.getRewardCutPercentage()
+        "state": curEpochPhase
+        //"cut": FlowIDTableStaking.getRewardCutPercentage()
     }
-
 }

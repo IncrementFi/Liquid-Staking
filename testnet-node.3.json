@@ -1,0 +1,32 @@
+{
+    "0": {
+        "id": "48601e8a1568f18ca4a574a656710342857f939f598679280a6941cc7b800b6f",
+        "role": "3",
+        "networkingAddress": "execution-003.devnet36.nodes.onflow.org:3569",
+        "networkingKey": "5000676131ad3e22d853a3f75a5b5d0db4236d08dd6612e2baad771014b5266a242bccecc3522ff7207ac357dbe4f225c709d9b273ac484fed5d13976a39bdcd",
+        "stakingKey": "b42228bf14e8ad241586a647ec5834099f9b0a8a7a540a9256fb3581771355dd7560032e05d66de61fefae198f13bfed1361b6e3c504d4f1324d1b3b4ad02ee7badb2b2920995c15d431be08230f9c5e2287195e6669bf25aa7607cc53ae9318",
+        "tokensStaked": "1250000.00000000",
+        "delegatorIDCounter": "0",
+        "delegatorStaked": "0.00000000"
+    },
+    "1": {
+        "id": "5f6c73a22445d7d958c6a37c1f3be99c72cacd39894a3e46d6647a9adb007b4d",
+        "role": "3",
+        "networkingAddress": "execution-001.devnet36.nodes.onflow.org:3569",
+        "networkingKey": "5db0d4a2aa1f72d6bd03decfddb3a45199a8f42321dce09a176aed85f8c76e82a969a721968e99dca3204a311b7d681a12b5e97450dfb15ba9f8bfabbd91ce80",
+        "stakingKey": "8c30fdf402de3861d2c78189e16e46a9d79ac6eebdfc0c54a92e283999997fb568c65843127dbec0c8b80d153d3167d616b1590844a4a6d678b40335938ded790778a868809f215f521256a422021ab411616ccba03c5a6dfcdf0beb35cc114d",
+        "tokensStaked": "1250000.00000000",
+        "delegatorIDCounter": "0",
+        "delegatorStaked": "0.00000000"
+    },
+    "2": {
+        "id": "a1f059a3e00347e585658e4c400be1580ba2e2f6d1f39387ad62e33f3f4d246d",
+        "role": "3",
+        "networkingAddress": "execution-002.devnet36.nodes.onflow.org:3569",
+        "networkingKey": "608429bdbbdd956fa0b0f137466748fab689479ae8399d6427c5d3c1502374fd40433e881d01b71fa93ae86b74ea2dea64b6dde088e9140736edb3ae64554f24",
+        "stakingKey": "927eef78324a46e700423c6f3cdf9998492b6003cd38b22979554455f510543b070aeb1243abc2fa76d6d1c0aea288ed0e8e5506f37a8f7f9ad3495be976ba57ec92346737af8aa75a3d9b7c9ca0f3a88c5abe2527dadf12b474fd0bde517174",
+        "tokensStaked": "1250000.00000000",
+        "delegatorIDCounter": "0",
+        "delegatorStaked": "0.00000000"
+    }
+}
