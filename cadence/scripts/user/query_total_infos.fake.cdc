@@ -43,6 +43,8 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
                 "unlockedTokensUsed": 83.0,
                 "migratedInfos": [
                     {
+                        "nodeID": "121132",
+                        "id": 123,
                         "tokensCommitted": 10.0,
                         "tokensStaked": 10.0,
                         "tokensUnstaking": 10.0,
