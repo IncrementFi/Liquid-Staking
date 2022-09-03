@@ -7,9 +7,7 @@ pub fun main(): {String: AnyStruct} {
     return {
         "currentRealEpoch": FlowEpoch.currentEpochCounter,
         "currentStakingEpoch": LiquidStaking.currentEpoch,
-        "currentRewardIndex": LiquidStaking.currentRewardIndex,
-        "historyReward": LiquidStaking.historyRewardIndex,
-
+        
         "totalCommitted": LiquidStaking.totalCommitted,
         "totalStaked": LiquidStaking.totalStaked,
         "totalUnstaking": LiquidStaking.totalUnstaking,

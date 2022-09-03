@@ -1,22 +1,15 @@
 import FungibleToken from "./standard/FungibleToken.cdc"
-import LiquidStakingInterfaces from "./LiquidStakingInterfaces.cdc"
-import LiquidStakingConfig from "./LiquidStakingConfig.cdc"
-
 
 pub contract stFlowToken: FungibleToken {
 
     // Total supply of Flow tokens in existence
     pub var totalSupply: UFix64
 
-    // 
+    // Paths
     pub let tokenVaultPath: StoragePath
     pub let tokenProviderPath: PrivatePath
     pub let tokenBalancePath: PublicPath
     pub let tokenReceiverPath: PublicPath
-    pub let tokenStakingInfoPath: PublicPath
-
-    pub var liquidStakingAddress: Address
-    
 
     // Event that is emitted when the contract is created
     pub event TokensInitialized(initialSupply: UFix64)
@@ -39,24 +32,6 @@ pub contract stFlowToken: FungibleToken {
     // Event that is emitted when a new burner resource is created
     pub event BurnerCreated()
 
-    // TODO
-    pub struct StakingInfo {
-        pub var latestCommittedBalance: UFix64?
-        pub var latestCommittedEpoch: UInt64?
-        
-        init() {
-            self.latestCommittedBalance = nil
-            self.latestCommittedEpoch = nil
-        }
-    }
-
-    pub resource interface StakingVoucher {
-        pub var rewardIndex: UFix64?
-        pub var latestCommittedBalance: UFix64?
-        pub var latestCommittedEpoch: UInt64?
-
-        //pub var stakingInfos: {String: StakingInfo}
-    }
     // Vault
     //
     // Each user stores an instance of only the Vault in their storage
@@ -69,31 +44,16 @@ pub contract stFlowToken: FungibleToken {
     // out of thin air. A special Minter resource needs to be defined to mint
     // new tokens.
     //
-    pub resource Vault: FungibleToken.Provider, FungibleToken.Receiver, FungibleToken.Balance, StakingVoucher {
+    pub resource Vault: FungibleToken.Provider, FungibleToken.Receiver, FungibleToken.Balance {
 
         // holds the balance of a users tokens
         pub var balance: UFix64
 
-        //pub var stakingInfos: {String: StakingInfo}
-
-        pub var latestCommittedBalance: UFix64?
-        pub var latestCommittedEpoch: UInt64?
-        pub var rewardIndex: UFix64?
-
         // initialize the balance at resource creation time
         init(balance: UFix64) {
             self.balance = balance
-            self.latestCommittedBalance = nil
-            self.latestCommittedEpoch = nil
-            self.rewardIndex = nil
         }
         
-        access(contract) fun initStakingVoucherVault() {
-            self.latestCommittedBalance = self.balance
-            self.latestCommittedEpoch = stFlowToken.getLiquidStakingPublicRef().getEpochToCommitStaking()
-            self.rewardIndex = 0.0
-        }
-
         // withdraw
         //
         // Function that takes an integer amount as an argument
@@ -118,63 +78,13 @@ pub contract stFlowToken: FungibleToken {
         // been consumed and therefore can be destroyed.
         pub fun deposit(from: @FungibleToken.Vault) {
             let vault <- from as! @stFlowToken.Vault
-
-            // TODO 传入的这个vault的stakingInfo也需要update
-
-            // TODO
-            self.mergeVault(vault: &vault as &stFlowToken.Vault)
-
+            self.balance = self.balance + vault.balance
             emit TokensDeposited(amount: vault.balance, to: self.owner?.address)
             vault.balance = 0.0
             destroy vault
         }
 
-        access(self) fun mergeVault(vault: &stFlowToken.Vault) {
-            self.balance = self.balance + vault.balance
-            
-            // update
-            self.updateVault()
-
-            // merge
-            if vault.latestCommittedEpoch != nil {
-                if self.latestCommittedEpoch == nil {
-                    self.latestCommittedEpoch = vault.latestCommittedEpoch
-                    self.latestCommittedBalance = vault.latestCommittedBalance
-                } else {
-                    assert(self.latestCommittedEpoch == vault.latestCommittedEpoch, message: "Committed Epoch have to be the same to merge")
-                    self.latestCommittedBalance = self.latestCommittedBalance! + vault.latestCommittedBalance!
-                }
-            }
-        }
-
-        pub fun updateVault() {
-            
-            if (self.latestCommittedEpoch != nil) {
-
-                let liquidStakingRef = stFlowToken.getLiquidStakingPublicRef()
-
-                let currentEpoch = liquidStakingRef.getCurrentEpoch()
-
-                if (currentEpoch > self.latestCommittedEpoch!) {
-                    // TODO 这些老的committed会被锁住，重新计算
-
-                    let commitLockedEpoch = self.latestCommittedEpoch! + 1
-                    let lockedRewardIndex = liquidStakingRef.getRewardIndex(epoch: commitLockedEpoch)
-
-                    if self.rewardIndex == nil {
-                        self.rewardIndex = lockedRewardIndex
-                    } else {
-                        self.rewardIndex = (self.rewardIndex! * (self.balance - self.latestCommittedBalance!) + lockedRewardIndex * self.latestCommittedBalance! ) / self.balance
-                    }
-
-                    self.latestCommittedEpoch = nil
-                    self.latestCommittedBalance = nil
-                }
-            }
-        }
-
         destroy() {
-            // TODO 如果有一些利息没有获取，不让destroy
             stFlowToken.totalSupply = stFlowToken.totalSupply - self.balance
         }
     }
@@ -188,11 +98,6 @@ pub contract stFlowToken: FungibleToken {
     //
     pub fun createEmptyVault(): @FungibleToken.Vault {
         return <-create Vault(balance: 0.0)
-    }
-
-    pub fun getLiquidStakingPublicRef(): &{LiquidStakingInterfaces.LiquidStakingPublic} {
-        let liquidStakingRef = getAccount(self.liquidStakingAddress).getCapability(LiquidStakingConfig.LiquidStakingPublicPath).borrow<&{LiquidStakingInterfaces.LiquidStakingPublic}>()!
-        return liquidStakingRef
     }
 
     pub resource Administrator {
@@ -231,21 +136,15 @@ pub contract stFlowToken: FungibleToken {
         //
         pub fun mintTokens(amount: UFix64): @stFlowToken.Vault {
             pre {
-                amount > UFix64(0): "Amount minted must be greater than zero"
+                amount > 0.0: "Amount minted must be greater than zero"
                 amount <= self.allowedAmount: "Amount minted must be less than the allowed amount"
             }
             stFlowToken.totalSupply = stFlowToken.totalSupply + amount
             if (self.allowedAmount != UFix64.max) {
                 self.allowedAmount = self.allowedAmount - amount
             }
-
-            let stFlowVault <-create Vault(balance: amount)
-            // Init staking params on new minted stFlow vault
-            stFlowVault.initStakingVoucherVault()
-
             emit TokensMinted(amount: amount)
-            
-            return <-stFlowVault
+            return <-create Vault(balance: amount)
         }
 
         init(allowedAmount: UFix64) {
@@ -281,9 +180,6 @@ pub contract stFlowToken: FungibleToken {
         self.tokenProviderPath = /private/stFlowTokenProvider
         self.tokenReceiverPath = /public/stFlowTokenReceiver
         self.tokenBalancePath = /public/stFlowTokenBalance
-        self.tokenStakingInfoPath = /public/stFlowTokenStakingInfo
-
-        self.liquidStakingAddress = stFlowToken.account.address
         
         // Create the Vault with the total supply of tokens and save it in storage
         //

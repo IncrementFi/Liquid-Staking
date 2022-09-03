@@ -3,6 +3,8 @@ import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
 
 pub fun main(): AnyStruct {
     // current nodes can be staked
-    let nodeIds = FlowIDTableStaking.getStakedNodeIDs();
-    return nodeIds
+    let stakedNodeIds = FlowIDTableStaking.getStakedNodeIDs();
+    let nodeIDs = FlowIDTableStaking.getNodeIDs();
+    
+    return [nodeIDs.length, stakedNodeIds.length]
 }

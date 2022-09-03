@@ -366,7 +366,7 @@ pub contract FlowStakingCollection {
             
             if self.nodeDelegators[nodeID] != nil {
                 let delegatorRef = (&self.nodeDelegators[nodeID] as &FlowIDTableStaking.NodeDelegator?)!
-                if delegatorRef.id == delegatorID { 
+                if delegatorRef.id == delegatorID {
                     let stakingInfo = FlowIDTableStaking.DelegatorInfo(nodeID: nodeID, delegatorID: delegatorID)
                     let totalStaked = stakingInfo.totalTokensInRecord() - stakingInfo.tokensRewarded
 

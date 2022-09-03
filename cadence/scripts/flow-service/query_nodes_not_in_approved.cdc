@@ -30,27 +30,33 @@ pub struct NodeInfo {
         
         self.tokensStaked = nodeInfo.tokensStaked
         self.delegatorIDCounter = nodeInfo.delegatorIDCounter
-        self.delegatorStaked = 0.0//nodeInfo.totalStakedWithDelegators() - self.tokensStaked
+        self.delegatorStaked = nodeInfo.totalStakedWithDelegators() - self.tokensStaked
 
         //self.tokensRewarded = nodeInfo.tokensRewarded
     }
 }
 
-pub fun main(role: UInt8): AnyStruct {
-    // current nodes can be staked
-    let nodeIds = FlowIDTableStaking.getStakedNodeIDs();
+pub fun main(): AnyStruct {
+    
+    // nodes not in approved list
+    let stakedNodeIds = FlowIDTableStaking.getStakedNodeIDs();
+    let nodeIds = FlowIDTableStaking.getNodeIDs();
     let nodeInfos: {Int: NodeInfo} = {}
     var index = 0;
-    var totalNodeStaked = 0.0
+    var totalDelegatorStaked = 0.0
     for nodeId in nodeIds {
+        if stakedNodeIds.contains(nodeId) {
+            //continue
+        }
         let nodeInfo = FlowIDTableStaking.NodeInfo(nodeID: nodeId)
-        if nodeInfo.role != role && role != 0 {
+
+        if nodeInfo.tokensStaked == 0.0 {
             continue
         }
         
         nodeInfos[index] = NodeInfo(nodeInfo)
-        totalNodeStaked = totalNodeStaked + nodeInfos[index]!.tokensStaked
+        totalDelegatorStaked = totalDelegatorStaked + nodeInfos[index]!.delegatorStaked
         index = index + 1
     }
-    return [nodeInfos, totalNodeStaked]
+    return totalDelegatorStaked
 }

@@ -1,280 +1,298 @@
-import FungibleToken from "./standard/FungibleToken.cdc"
+/**
+
+# Liquid Staking
+
+# Author: Increment Labs
+
+*/
+
 import FlowToken from "./standard/FlowToken.cdc"
 
 import FlowIDTableStaking from "./flow/FlowIDTableStaking.cdc"
 import FlowEpoch from "./flow/FlowEpoch.cdc"
 
-import LiquidStakingInterfaces from "./LiquidStakingInterfaces.cdc"
-import LiquidStakingConfig from "./LiquidStakingConfig.cdc"
 import stFlowToken from "./stFlowToken.cdc"
+import LiquidStakingConfig from "./LiquidStakingConfig.cdc"
+import DelegatorManager from "./DelegatorManager.cdc"
 
 pub contract LiquidStaking {
-	
-	pub var currentEpoch: UInt64
-
-	pub var currentRewardIndex: UFix64
-
-	pub var totalCommitted: UFix64
-	pub var totalStaked: UFix64
-	pub var totalUnstaking: UFix64
-	pub var totalRewarded: UFix64
-	pub var totalUnstaked: UFix64
-	pub var totalRequestedToUnstake: UFix64
-
-	//
-	access(self) let nodeDelegators: @{String: FlowIDTableStaking.NodeDelegator}
-	pub var nodeDelegatorInfos: {String: FlowIDTableStaking.DelegatorInfo}
-	//
+	/// stFlowToken
 	access(self) var stFlowMinter: @stFlowToken.Minter
+	access(self) var stFlowBurner: @stFlowToken.Burner
 
-	// EpochCounter: rewardIndex
-	pub let historyRewardIndex: {UInt64: UFix64}
-	//
-	//access(self) var userInfos: {Address: UserInfo}
+	/// Paths
+	pub var UnstakingVoucherCollectionPath: StoragePath
+	pub var UnstakingVoucherCollectionPublicPath: PublicPath
 
-	pub struct UserInfo {
-		pub var tokenCommitted: UFix64
-		
-		
-		init() {
-			self.tokenCommitted = 0.0
+	/// Events
+	pub event Stake(flowAmountIn: UFix64, stFlowAmountOut: UFix64, epoch: UInt32)
+	pub event UnstakeSlowly(stFlowAmountIn: UFix64, lockedFlowAmount: UFix64, epoch: UInt64, unlockEpoch: UInt64, voucherUUID: UInt64)
+	pub event UnstakeQuickly(stFlowAmountIn: UFix64, flowAmountOut: UFix64, epoch: UInt64)
+	pub event MigrateDelegator(uuid: UInt64, migratedFlowIn: UFix64, stFlowOut: UFix64)
+	pub event BurnUnstakingVoucher(uuid: UInt64, cashingFlowAmount: UFix64, cashingEpoch: UInt64)
+
+	/// Reserved parameter fields: {ParamName: Value}
+    access(self) let _reservedFields: {String: AnyStruct}
+
+	/// UnstakingVoucher
+	///
+	/// Voucher for unstaking certificate, has an inner locking period up to two epoch
+	///
+	pub resource UnstakingVoucher {
+
+		/// Flow token amount to be unlocked
+		pub let lockedFlowAmount: UFix64
+
+		/// Unlock epoch
+		pub let unlockEpoch: UInt64
+
+		init(lockedFlowAmount: UFix64, unlockEpoch: UInt64) {
+			self.lockedFlowAmount = lockedFlowAmount
+			self.unlockEpoch = unlockEpoch
 		}
 	}
 
-	// Events
-	pub event RegisterNewDelegator(nodeID: String, delegatorID: UInt32)
-
-	// Register delegator on new staking node
-	access(account) fun registerDelegator(_ nodeID: String) {
+	/// Stake
+	///
+	/// FlowToken -> stFlowToken
+	///
+	pub fun stake(flowVault: @FlowToken.Vault): @stFlowToken.Vault {
 		pre {
-			self.isNodeDelegated(nodeID) == false: "Cannot register a delegator for a node that is already being delegated to"
+			// Min staking amount check
+			flowVault.balance > LiquidStakingConfig.minStakingAmount: "Stake amount must be greater than ".concat(LiquidStakingConfig.minStakingAmount.toString())
+			// Staking amount cap check
+			LiquidStakingConfig.stakingCap >= flowVault.balance + DelegatorManager.getTotalValidStakingAmount(): "Exceed stake cap"
+			// Pause check
+			LiquidStakingConfig.isStakingPaused == false: "Staking is paused"
+			// Flow blockchain staking state check
+			FlowIDTableStaking.stakingEnabled(): "The Flow blockchain currently pauses the staking operation."
+			// Protocol staking state check
+			FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Please wait the protocol to enter the new staking epoch"
 		}
 
-		let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
-
-		emit RegisterNewDelegator(nodeID: nodeDelegator.nodeID, delegatorID: nodeDelegator.id)
-
-		self.nodeDelegators[nodeDelegator.nodeID] <-! nodeDelegator
-	}
-
-	// 用户stake进来的时候，会mint出同等量的stFlow
-	// 记录下这个stFlow的 rewardIndex
-	// ?? 新生成的stflow vault会跟用户本地的merge?
-	// ？？ 有多少是还未被质押的？
-	pub fun stake(nodeID: String, stakeVault: @FlowToken.Vault): @stFlowToken.Vault {
-		pre {
-			stakeVault.balance > 0.0: "Stake amount must be greater than 0"
-		}
+		let flowAmountToStake = flowVault.balance
+		let stFlowAmountToMint = self.calcStFlowFromFlow(flowAmount: flowAmountToStake)
 		
-		// new stake node
-		if self.isNodeDelegated(nodeID) == false {
-			self.registerDelegator(nodeID)
-		}
+		//
+		DelegatorManager.depositToCommitted(flowVault: <-flowVault)
 
-		let stakeAmount = stakeVault.balance
-		let nodeDelegator = self.borrowDelegator(nodeID)!
+		// Mint stFlow
+		let stFlowVault <- self.stFlowMinter.mintTokens(amount: stFlowAmountToMint)
 
-		// update total record
-		self.totalCommitted = self.totalCommitted + stakeAmount
+		emit Stake(flowAmountIn: flowAmountToStake, stFlowAmountOut: stFlowAmountToMint, epoch: FlowEpoch.currentEpochCounter)
 
-		// On stake auction stage, committed tokens will be staked in the next epoch.
-		if (FlowIDTableStaking.stakingEnabled()) {
-			// Delegate into committed vault of FlowIDTableStaking
-			nodeDelegator.delegateNewTokens(from: <-stakeVault)
-			// Mint stFlow
-			let stFlowVault <- self.stFlowMinter.mintTokens(amount: stakeAmount)
-
-			return <-stFlowVault
-		}
-		// When auction stage ends and the next epoch does not start, tokens will be held and committed until the new epoch start.
-		else {
-			// TODO
-			destroy stakeVault
-			assert(false, message: "not in auction stage")
-
-			return <-self.stFlowMinter.mintTokens(amount: 0.0)
-		}
+		return <-stFlowVault
 	}
 
-	// 有多少是立马可以unstake的？
-	// 有多少是锁住的需要被记录下周提取的？
-	pub fun unstake(nodeID: String, stFlowVault: @stFlowToken.Vault) {
-		// 判断此nodeID中是否有足够的量可以unstake
+	/// Unstake Slowly
+	///
+	/// stFlowToken -> UnstakingVoucher
+	///
+	pub fun unstakeSlowly(stFlowVault: @stFlowToken.Vault): @UnstakingVoucher {
+		pre {
+			// Pause check
+			LiquidStakingConfig.isUnstakingPaused == false: "Unstaking is paused"
+		}
+		let stFlowAmountToBurn = stFlowVault.balance
+		let flowAmountToUnstake = self.calcFlowFromStFlow(stFlowAmount: stFlowAmountToBurn)
 
-		// 上传的stFlowVault中有多少是committed的？
-		//stFlowVault.
+		// Burn stFlow
+		self.stFlowBurner.burnTokens(from: <-stFlowVault)
 
-		destroy stFlowVault
-	}
-	
-	// ?? 单独claim奖励？ 直接claim成Flow
-	pub fun claim() {
+		//
+		DelegatorManager.requestWithdrawFromStaked(amount: flowAmountToUnstake)
+		
+		let currentBlockView = getCurrentBlock().view
+		let stakingEndView = FlowEpoch.getEpochMetadata(FlowEpoch.currentEpochCounter)!.stakingEndView
 
-	}
-
-	pub fun updateOnNewEpoch() {
-		// 进入新epoch时，将上个epoch产生的reward全部收集起来
-		if FlowEpoch.currentEpochCounter > self.currentEpoch {
-			
-			let newDelegatorInfos: {String: FlowIDTableStaking.DelegatorInfo} = {}
-			// 
-
-			//self.nodeDelegatorInfos = {}
-			let nodeIDs: [String] = self.nodeDelegators.keys
-
-			let preTotalCommitted = self.totalCommitted
-			let preTotalStaked = self.totalStaked
-			let preTotalUnstaking = self.totalUnstaking
-			let preTotalRewarded = self.totalRewarded
-			let preTotalUnstaked = self.totalUnstaked
-			let preTotalRequestedToUnstake = self.totalRequestedToUnstake
-			self.totalCommitted = 0.0
-			self.totalStaked = 0.0
-			self.totalUnstaking = 0.0
-			self.totalRewarded = 0.0
-			self.totalUnstaked = 0.0
-			self.totalRequestedToUnstake = 0.0
-
-			// TODO 如果400个节点同时存在，这里有out of gas limit的风险
-			// 1. 官方的奖励派发不能保障在新epoch到来前
-			// 2. 奖励的派发不能保障一次性发放
-			for nodeID in nodeIDs {
-				let delegatorID = self.nodeDelegators[nodeID]?.id
-                let info = FlowIDTableStaking.DelegatorInfo(nodeID: nodeID, delegatorID: delegatorID!)
-
-				if self.nodeDelegatorInfos.containsKey(nodeID) && self.nodeDelegatorInfos[nodeID]?.tokensStaked! > 0.0 {
-					let preReward = self.nodeDelegatorInfos[nodeID]?.tokensRewarded!
-					let curReward = info.tokensRewarded
-					assert(curReward > preReward, message: "Rewards are not paid on node: ".concat(nodeID))
-				}
-
-				self.totalCommitted = self.totalCommitted + info.tokensCommitted
-				self.totalStaked = self.totalStaked + info.tokensStaked
-				self.totalUnstaking = self.totalUnstaking + info.tokensUnstaking
-				self.totalRewarded = self.totalRewarded + info.tokensRewarded
-				self.totalUnstaked = self.totalUnstaked + info.tokensUnstaked
-				self.totalRequestedToUnstake = self.totalRequestedToUnstake + info.tokensRequestedToUnstake
-
-				newDelegatorInfos[nodeID] = info
+		var unlockEpoch = FlowEpoch.currentEpochCounter + 2
+		if FlowIDTableStaking.stakingEnabled() {
+			// Before flowchain ends staking, a window of processing time needs to be reserved for the bots.
+			if currentBlockView + LiquidStakingConfig.windowSizeBeforeStakingEnd >= stakingEndView {
+				unlockEpoch = FlowEpoch.currentEpochCounter + 3
 			}
-
-			assert(preTotalStaked + preTotalCommitted - preTotalRequestedToUnstake == self.totalStaked, message: "Data sync error: staked expect ".concat((preTotalStaked + preTotalCommitted - preTotalRequestedToUnstake).toString()).concat(" got ").concat(self.totalStaked.toString()))
-			assert(preTotalRequestedToUnstake == self.totalUnstaking, message: "Data sync error: unstaking")
-
-			// TODO 在上个epoch的末期的提交会被放到当前的committed中
-
-			//
-			self.currentEpoch = FlowEpoch.currentEpochCounter
-			//
-			self.nodeDelegatorInfos = newDelegatorInfos
-
-			// 新产生的rewards
-			// TODO 这里会是负数吗？ 如果外部操作都正确的同步更新totalRewards
-			let rewardDelta = self.totalRewarded - preTotalRewarded
-
-			var rewardPerToken = 0.0
-			if preTotalStaked > 0.0 {
-				rewardPerToken = rewardDelta / preTotalStaked
-			}
-			
-
-			self.currentRewardIndex = self.currentRewardIndex + rewardPerToken
-			// 记录历史rewardIndex
-			self.historyRewardIndex[self.currentEpoch] = self.currentRewardIndex
-		}
-	}
-
-	access(self) fun borrowDelegator(_ nodeID: String): &FlowIDTableStaking.NodeDelegator? {
-		if self.nodeDelegators[nodeID] != nil {
-			let delegatorRef = (&self.nodeDelegators[nodeID] as &FlowIDTableStaking.NodeDelegator?)!
-			return delegatorRef
 		} else {
-			return nil
+			// During Flowchain stops staking, all unstaking requests will be reserved until the next epoch for future processing.
+			unlockEpoch = FlowEpoch.currentEpochCounter + 3
 		}
+		
+		let unstakeVoucher <- create UnstakingVoucher(
+			lockedFlowAmount: flowAmountToUnstake,
+			unlockEpoch: unlockEpoch
+		)
+
+		emit UnstakeSlowly(stFlowAmountIn: stFlowAmountToBurn, lockedFlowAmount: flowAmountToUnstake, epoch: FlowEpoch.currentEpochCounter, unlockEpoch: unlockEpoch, voucherUUID: unstakeVoucher.uuid)
+
+		return <- unstakeVoucher
 	}
 
-	pub fun getRewardIndex(epoch: UInt64): UFix64 {
-		return self.historyRewardIndex[epoch]!
-	}
-
-	pub fun getCurrentRewardIndex(epoch: UInt64): UFix64 {
+	/// Unstake Quickly
+	///
+	/// Fast unstake from reserved committed tokens
+	/// stFlowToken -> FlowToken
+	///
+	pub fun unstakeQuickly(stFlowVault: @stFlowToken.Vault): @FlowToken.Vault {
 		pre {
-			FlowEpoch.currentEpochCounter == self.currentEpoch: "Data is out of date"
+		 	// Flow chain unstaking state check
+			FlowIDTableStaking.stakingEnabled(): "The Flow blockchain currently pauses the unstaking operation."
+			// Pause check
+			LiquidStakingConfig.isUnstakingPaused == false: "Unstaking is paused"
+			// Protocol unstaking state check
+			FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Please wait the protocol to enter the new staking epoch"
 		}
-		return self.historyRewardIndex[self.currentEpoch]!
+		let stFlowAmountToBurn = stFlowVault.balance
+		let flowAmountToUnstake = self.calcFlowFromStFlow(stFlowAmount: stFlowAmountToBurn)
+
+		//
+		let flowVault <- DelegatorManager.withdrawFromCommitted(amount: flowAmountToUnstake)
+		
+		// Fast unstake fee
+		let feeVault <- flowVault.withdraw(amount: LiquidStakingConfig.quickUnstakeFee * flowAmountToUnstake)
+		DelegatorManager.depositProtocolReservedVault(flowVault: <-feeVault, purpose: "unstake fee")
+		
+		// Burn stFlow
+		self.stFlowBurner.burnTokens(from: <-stFlowVault)
+
+		emit UnstakeQuickly(stFlowAmountIn: stFlowAmountToBurn, flowAmountOut: flowVault.balance, epoch: FlowEpoch.currentEpochCounter)
+		
+		return <-flowVault
 	}
 
-	pub fun isNodeDelegated(_ nodeID: String): Bool {
-		return self.nodeDelegators.keys.contains(nodeID)
+	/// Unstaking Voucher Cashing
+	///
+	/// UnstakingVoucher -> FlowToken
+	///
+	pub fun cashingUnstakingVoucher(voucher: @UnstakingVoucher): @FlowToken.Vault {
+		pre {
+			// Waiting all unstaked tokens to be collected
+			DelegatorManager.quoteEpochCounter >= voucher.unlockEpoch: "The cashing day hasn't arrived yet"
+		}
+		
+		let cashingFlowAmount = voucher.lockedFlowAmount
+		
+		let flowVault <-DelegatorManager.withdrawFromUnstaked(amount: cashingFlowAmount)
+
+		emit BurnUnstakingVoucher(uuid: voucher.uuid, cashingFlowAmount: cashingFlowAmount, cashingEpoch: DelegatorManager.quoteEpochCounter)
+
+		// Burn voucher
+		destroy voucher
+
+		return <-flowVault
 	}
 
+	/// Migrate delegator
+	///
+	/// NodeDelegator -> stFlow
+	///
+	pub fun migrate(delegator: @FlowIDTableStaking.NodeDelegator): @stFlowToken.Vault {
+		pre {
+			// Flowchain staking state check
+			FlowIDTableStaking.stakingEnabled(): "System staking disabled"
+			// Pause check
+			LiquidStakingConfig.isMigratingPaused: "Migrating is paused"
+			// Protocol staking state check
+			FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Please wait the protocol to enter the new staking epoch"
+		}
+		let delegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: delegator.nodeID, delegatorID: delegator.id)
+		
+		assert(LiquidStakingConfig.stakingCap >= delegatroInfo.tokensStaked + DelegatorManager.getTotalValidStakingAmount(), message: "Exceed stake cap")
+		assert(delegatroInfo.tokensUnstaking == 0.0, message: "Wait for the previous unstaking processing to complete")
+		assert(delegatroInfo.tokensRewarded == 0.0, message: "Please claim the reward before migrating")
+		assert(delegatroInfo.tokensUnstaked == 0.0, message: "Please withdraw the unstaked tokens before migrating")
+		assert(delegatroInfo.tokensRequestedToUnstake == 0.0, message: "Please cancel the unstake requests before migrating")
+		assert(delegatroInfo.tokensCommitted == 0.0, message: "Please cancel the stake requests before migrating")
+		assert(delegatroInfo.tokensStaked > 0.0, message: "No staked tokens need to be migrated.")
+
+		let stakedFlowToMigrate = delegatroInfo.tokensStaked
+
+		//
+		let stFlowAmountToMint = self.calcStFlowFromFlow(flowAmount: stakedFlowToMigrate)
+
+		emit MigrateDelegator(uuid: delegator.uuid, migratedFlowIn: stakedFlowToMigrate, stFlowOut: stFlowAmountToMint)
+
+		DelegatorManager.migrateDelegator(delegator: <-delegator)
+
+		// Mint stFlow
+		let stFlowVault <- self.stFlowMinter.mintTokens(amount: stFlowAmountToMint)
+		return <-stFlowVault
+	}
+
+
+
+	/// Unstaking voucher collection
+	///
+	pub resource interface UnstakingVoucherCollectionPublic {
+		pub fun getVoucherInfos(): [AnyStruct]
+		pub fun deposit(voucher: @UnstakingVoucher)
+	}
+	pub resource UnstakingVoucherCollection: UnstakingVoucherCollectionPublic {
+		/// Unstaking voucher list 
+		access(self) var vouchers: @[UnstakingVoucher]
+
+		destroy() {
+			destroy self.vouchers
+		}
+
+		pub fun deposit(voucher: @UnstakingVoucher) {
+			self.vouchers.append(<-voucher)
+		}
+
+		pub fun withdraw(index: UInt32): @UnstakingVoucher {
+			let voucher <- self.vouchers.remove(at: index)
+			return <-voucher
+		}
+
+		pub fun getVoucherInfos(): [AnyStruct] {
+			var voucherInfos: [AnyStruct] = []
+			var index = 0
+			while index < self.vouchers.length {
+				voucherInfos.append({
+					"uuid": self.vouchers[index].uuid,
+					"lockedFlowAmount": self.vouchers[index].lockedFlowAmount,
+					"unlockEpoch": self.vouchers[index].unlockEpoch
+				})
+				index = index + 1
+			}
+			return voucherInfos
+		}
+		init() {
+			self.vouchers <- []
+		}
+	}
+
+	pub fun createEmptyUnstakingVoucherCollection(): @UnstakingVoucherCollection {
+		return <-create UnstakingVoucherCollection()
+	}
 	
-	pub resource LiquidStakingPublic: LiquidStakingInterfaces.LiquidStakingPublic {
-		pub fun getCurrentEpoch(): UInt64 {
-			return LiquidStaking.currentEpoch
-		}
-
-		pub fun getRewardIndex(epoch: UInt64): UFix64 {
-			return LiquidStaking.historyRewardIndex[epoch]!
-		}
-
-		pub fun getCurrentRewardIndex(epoch: UInt64): UFix64 {
-			pre {
-				FlowEpoch.currentEpochCounter == LiquidStaking.currentEpoch: "Out of date"
-			}
-			return LiquidStaking.historyRewardIndex[LiquidStaking.currentEpoch]!
-		}
-
-		// Flow的epoch周期分为三部分
-		// 在auction期间可以正常质押
-		// 在另外两个周期的质押会被延后	
-		pub fun getEpochToCommitStaking(): UInt64 {
-			let currentEpochCounter = FlowEpoch.currentEpochCounter
-			if (FlowIDTableStaking.stakingEnabled()) {
-				return currentEpochCounter
-			} else {
-				return currentEpochCounter + 1
-			}
-		}
-
-
+	/// Calculate exchange amount from Flow to stFlow
+	///
+	pub fun calcStFlowFromFlow(flowAmount: UFix64): UFix64 {
+		let currentEpochSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
+		let flowPrice = currentEpochSnapshot.quoteFlowStFlow
+		
+		let stFlowAmount = flowPrice * flowAmount
+		return stFlowAmount
 	}
 
-	pub resource Admin {
-		pub fun registerDelegator(nodeID: String) {
-			LiquidStaking.registerDelegator(nodeID)
-		}
+	/// Calculate exchange amount from stFlow to Flow
+	///
+	pub fun calcFlowFromStFlow(stFlowAmount: UFix64): UFix64 {
+		let currentEpochSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
+		let stFlowPrice = currentEpochSnapshot.quoteStFlowFlow
+
+		let flowAmount = stFlowPrice * stFlowAmount
+		return flowAmount
 	}
 
 	init() {
-		self.currentEpoch = FlowEpoch.currentEpochCounter
-		self.currentRewardIndex = 0.0
-		
-		self.totalCommitted = 0.0
-		self.totalStaked = 0.0
-		self.totalUnstaking = 0.0
-		self.totalRewarded = 0.0
-		self.totalUnstaked = 0.0
-		self.totalRequestedToUnstake = 0.0
+		self.UnstakingVoucherCollectionPath = /storage/unstaking_voucher_collection
+		self.UnstakingVoucherCollectionPublicPath = /public/unstaking_voucher_collection
+		self._reservedFields = {}
 
-
-		self.nodeDelegators <- {}
-		self.nodeDelegatorInfos = {}
-		self.historyRewardIndex = {}
-		//self.userInfos = {}
-
-		
-
-		self.account.save(<-create Admin(), to: /storage/stakingAdmin)
-
-		// create stFlow minter
+		// Create stFlow minter & burner
 		let stFlowAdmin = self.account.borrow<&stFlowToken.Administrator>(from: /storage/stFlowTokenAdmin)!
 		self.stFlowMinter <- stFlowAdmin.createNewMinter(allowedAmount: UFix64.max)
-
-		// 
-		self.account.save(<-create LiquidStakingPublic(), to: /storage/liquidStakingPublic)
-		self.account.unlink(LiquidStakingConfig.LiquidStakingPublicPath)
-		self.account.link<&{LiquidStakingInterfaces.LiquidStakingPublic}>(LiquidStakingConfig.LiquidStakingPublicPath, target: /storage/liquidStakingPublic)
+		self.stFlowBurner <- stFlowAdmin.createNewBurner()
 	}
-
 }
+ 

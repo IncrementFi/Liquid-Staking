@@ -7,12 +7,15 @@ pub fun main(userAddr: Address): {String: AnyStruct} {
     let flowBalance = getAccount(userAddr).getCapability<&{FungibleToken.Balance}>(/public/flowTokenBalance).borrow()!.balance
     let stFlowBalance = getAccount(userAddr).getCapability<&{FungibleToken.Balance}>(/public/stFlowTokenBalance).borrow()!.balance
 
-    let stFlowInfo = getAccount(userAddr).getCapability<&{stFlowToken.StakingVoucher}>(/public/stFlowTokenStakingInfo).borrow()!
-
+    let voucherCollectionRef = getAccount(userAddr).getCapability<&{LiquidStaking.UnstakingVoucherCollectionPublic}>(LiquidStaking.UnstakingVoucherCollectionPublicPath).borrow()
+    var voucherInfos: [AnyStruct]? = nil
+    if voucherCollectionRef != nil {
+        voucherInfos = voucherCollectionRef!.getVoucherInfos()
+    }
     //let usdcBalance = getAccount(userAddr).getCapability<&{FungibleToken.Balance}>(/public/USDCVaultBalance).borrow()!.balance
     return {
         "Flow": flowBalance,
         "stFlow": stFlowBalance,
-        "stFlowInfo": stFlowInfo
+        "vouchers": voucherInfos
     }
 }

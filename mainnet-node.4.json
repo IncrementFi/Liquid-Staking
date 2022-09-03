@@ -2,7 +2,7 @@
     "0": {
         "id": "c645aeb9de888759c083fdba20d71de489525fcd46c99d12ff78c5e45170e7c9",
         "role": "4",
-        "networkingAddress": "verification-027.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-027.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "0200d0873926bf273ae385c0b4ac9da7438e2b344bb9b8bc6515639a9c42876540a422e7415b2cf3446b156fc83557aa0bfe7260f2089f748edc2d754baae5f2",
         "stakingKey": "83fc11865c2c85912a7a3d49b62fe922677fe1b02523dbdea8743bcadcbac1f3987fe38a7c6cc38b8930862c241881a1057069e4888501fd1cf484cb8813f1dd41985bc5dcd804e4dd142a3d71baf0f7c5f87f27bef6e5446cb54307febe3836",
         "tokensStaked": "900000.00000000",
@@ -12,7 +12,7 @@
     "1": {
         "id": "dc569806596f4821dff0756bae7451b5ccd67ff4990152f4fe897532e6a8b948",
         "role": "4",
-        "networkingAddress": "verification-008.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-008.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "05e4db28c328bf803a97cf4ee2b7e88b489d6a32f146389b1e0360fc6c0b633489c5423cadcad71de9879c53849234bd6c828c36162e887e27abcdfd32ba58f1",
         "stakingKey": "841eb30ef6f459b56c1023c4dc2b3f85567bd64df9489e4d03c217adf09696cda74986e16e61a82b6d7e7b796f98a802099e3b85b3c5b0ce813068674f852b935bb6247dc5de8f042aa932b48d007677c93f406bc4242bf0c97b83e49d93bb5c",
         "tokensStaked": "900000.00000000",
@@ -25,14 +25,14 @@
         "networkingAddress": "45.32.77.34:3569",
         "networkingKey": "7b03f857ddf827ed70b196ce2e298aad2671dc054244ed06eef92e390bb167d54206e5f2415c98b68ad65f5c4794e91e90304dffd050c27c5d567ae0872ed070",
         "stakingKey": "8c65d77a7e7e58f423d06c27431144dc63c79a35dd5a9c11b2dff3cac199e558001a2b324f05f40d7aa722db823b684b173676052dd3c50dc845449b1f20b43df53e859ca8d6602688733741e581378df1d149628ddc0a04b30b6f351bc8ed06",
-        "tokensStaked": "286000.82514184",
-        "delegatorIDCounter": "44",
-        "delegatorStaked": "2582463.13951114"
+        "tokensStaked": "286500.82514184",
+        "delegatorIDCounter": "45",
+        "delegatorStaked": "2559178.17238211"
     },
     "3": {
         "id": "68b67b4e2e14fd60925524ef2c9ff5f085ecaf7873a7acffa18aab748acb9b47",
         "role": "4",
-        "networkingAddress": "verification-048.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-048.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "157dadc25d292cc83271d0d8ebc91f551e3e7e790653ac8ccaf77be4e3cbe33082a18140a43f981f0843c50b2dbd687ea5800c1a97947902dac70acd559aedc5",
         "stakingKey": "b8ffbb4e9f67894f88fb186d10a9ff1ecf4dafd84c6d68f07a9e8a4e6bb17ae505f6dc49a742796216d321befc6cc1af05862be8684d502431f3d5f7555904ca4d70a4d56f3a03bd88b1aafee21127050c61e725d96907e3e1ead14d4f69ccfd",
         "tokensStaked": "900000.00000000",
@@ -46,13 +46,13 @@
         "networkingKey": "0afb99ed4e995e033de7782d24572b803a4db8780c60abb578379752d20f678a702f726e167ce8771e8eb335f6513ed2f588aad19a90acf09944c737aab224e7",
         "stakingKey": "b576c11e9cc5c7c4f63bc40bf36725834438c474e2f09c68762811cd7bfa9d6a96222e42790cd692aed3cd2b1d51982a1407e33ae6474459c92d15b4a6d7da004e214c1e88b50b024ef0593df9554cb950dcdd343b8ce3a10ed3d27b97f5a29e",
         "tokensStaked": "138208.43029016",
-        "delegatorIDCounter": "14",
-        "delegatorStaked": "1043.84079337"
+        "delegatorIDCounter": "15",
+        "delegatorStaked": "1311.33426924"
     },
     "5": {
         "id": "e595dd1c3bf1aa25cbdcb056be269a8957be781465c14340ef3c0bebffb30db4",
         "role": "4",
-        "networkingAddress": "verification-024.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-024.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "313c690790463f54a5c65579c2c95f4f2845000519adf3cb6f4cd6ab8cd321acf397eca7dff3432199ed68ace208999cd0922f1a0c1edb72e6eceb90c45448fa",
         "stakingKey": "8422c48f0ac540d00b630a64bdd08e110005d0b71fdbdec4d420f34d39f90d6f2d333b2bf1da12707d78bbacd061569c08763cbb5ffc7464a9392fabe57705e9907fbce6d42e63bf7ef1633caec6584535a5cee45ca549dbd7fe607b818a9deb",
         "tokensStaked": "900000.00000000",
@@ -62,12 +62,12 @@
     "6": {
         "id": "fffba108a52e4ca8f5d30658c3f03f47ad1cc13a0995435c0532336236813218",
         "role": "4",
-        "networkingAddress": "35.236.108.108:3569",
+        "networkingAddress": "bitcoinlouie.us.to:3569",
         "networkingKey": "372a32c3d073a03787c249bd54ae70ce0dce21e9e115bf82231ecf6843bcad498054281f7b752b092bce5cd2f3fea81345cd250134c0fd0b9516f211b5bf7ee3",
         "stakingKey": "b912183e094d931bcab987ff54b15375926886c5519919a39257e949b85d34d79b0ed761f9a4ac70ddcdaad141c91bf4152f87e714a0e524e1cdf165760e5064d67090509e59f71c132fe2b64787a78a60d3f5bf2de3de2937b0aaeb584e87ad",
         "tokensStaked": "136281.34862690",
-        "delegatorIDCounter": "34",
-        "delegatorStaked": "829181.74574575"
+        "delegatorIDCounter": "36",
+        "delegatorStaked": "830769.51671354"
     },
     "7": {
         "id": "adac59f7a5265148ec8e7c95f373d9ce9a7ec2baeaafda965d9cbfb4f88f8039",
@@ -75,14 +75,14 @@
         "networkingAddress": "flow.snowfro.com:3569",
         "networkingKey": "2b71d058224e4083b47ace6189143dbddbc3a90ba36bd26dd07ff831a03b5da7eb6c86861347c397083bf61d3163ebe8cb2c6c1acd9e26cef699a95533bc7dc9",
         "stakingKey": "8cedba887a1acf91b6f60cf8cfde67f7f54a0890fdc37699bfa3c2e1fb7a2ee5ad6b79249593ad425fe08fcd099d993f06a0355cde26bf60c2cabfb65930bfbf8bb7e32154d115e8b4678f8bc6e7aa9e41ee691bbc3e4ff9bdfd12fb88660ac5",
-        "tokensStaked": "343030.00000000",
-        "delegatorIDCounter": "20",
-        "delegatorStaked": "156721.45933409"
+        "tokensStaked": "345580.00000000",
+        "delegatorIDCounter": "22",
+        "delegatorStaked": "158205.66961646"
     },
     "8": {
         "id": "5006ca1d8cca9a2ef2401bf5a97fcde38be85367f0b9c8697fc9ee7ec39faad4",
         "role": "4",
-        "networkingAddress": "verification-018.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-018.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "7bff3c9f9af654f1517886f33a3395fac7b8850b1e7d16f4eb68aa595b7894ce3ecaee7188cb33e0fb1eff283f9c8902a1de88119fa44926cef860f58d6a323b",
         "stakingKey": "b78617572a0fc84784f35bf5cb239866b75ef6d0e5f83ef66aa956f33569ee047abe114dce582fdb6384915fff8ab91119a893d28f044a269be5380da674abe852f1fe95a06bc7a5477f1e6b97e95889ea7e322382fa5284aa9a59d5e0737daf",
         "tokensStaked": "900000.00000000",
@@ -92,7 +92,7 @@
     "9": {
         "id": "0a29d8eb288d9bb0a0a4f2f9ff180ec83617659998ce363814048ec1683083e0",
         "role": "4",
-        "networkingAddress": "verification-006.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-006.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "e7b5aa5e523cffa772d65b7143d138b08f143c24fc601cf5dc1afb123f452372efb8eed1c836c32e4a7c4ab38f95f59faff28014f876b99ae48793782ebea748",
         "stakingKey": "86a65f0fec901567c8b7e7b1bc1c418d4a16b3390cb6174a273499ab875ff1a32273c87dfc2ca382650d557baa37941412f1fbb3ad92a241bf10310bf3ca9cd520051ef405df1e9491b8b31964fe579ca7fe088b6c895e8fb8558d547ae8d30e",
         "tokensStaked": "900000.00000000",
@@ -105,14 +105,14 @@
         "networkingAddress": "verification-01.flow.sil.ubisoft.com:3569",
         "networkingKey": "7680eb3035bcb46d92a7fad079266b0f151cee180c54506207998ea90f02214347e200b431a37d1c17c80bde3b99748954a050256af502ba8f1453c4fd466bff",
         "stakingKey": "aa5c8f996d0bf1b82a7d58f760dad068216c7c863daf3ee51e19063208f67054e058db07c0a9e1e41affb0ef86b4aeb61586270d2ef4cec4a551a9887272de8e19c37dbad8ceb20fe9de4f155eaea61fc6a5cac4a47016f2fc0b32aec463d2af",
-        "tokensStaked": "160533.95465151",
+        "tokensStaked": "161397.94761293",
         "delegatorIDCounter": "1",
         "delegatorStaked": "0.00110000"
     },
     "11": {
         "id": "c010201531f578ccce0196c4e62f82ffba366716a102c5c24a0287b5a978dcde",
         "role": "4",
-        "networkingAddress": "verification-026.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-026.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "e4813b295ab8e55975b866df4141a4c6c9b8af609fa14936715916bce7137ea222c0450c5c46c0f992b5db11e519e4bc3f5f12614b9c98fdbf6f930c77d2540c",
         "stakingKey": "8040e4ef9935db8fc477eba87c64c06f3d6e586bfa7054750f7d77800ed30d31cadf36fe5fdeeb6275dee3c89109e32f01fa11f2471f1b9ebf7c0bf5aae481c759360329ee09ce0b366be9ff6fc7cda8516cb12706415fc868d98cba6eab30c6",
         "tokensStaked": "900000.00000000",
@@ -126,13 +126,13 @@
         "networkingKey": "3763555ee1113e50373c1f1e5c9d1e1c566d4490776ea1e5eba29d87d67b356759881fbad32c16ccb077dd2a0040cc4641677c6e8ce31342a726f44b0445998e",
         "stakingKey": "b7766f71944230ef91c9500fa477a49018045652e45b7b03b6570b9a3e881951d9a6312ee05cdc7adc3767cb1530a5bf0b754f5ba1d33a7e570938ffea2d88ad883a5bdc68ce091fe5a9360076de391579bf986aba32ad736b6deae652b62dff",
         "tokensStaked": "165003.25107347",
-        "delegatorIDCounter": "47",
-        "delegatorStaked": "1824115.70442298"
+        "delegatorIDCounter": "49",
+        "delegatorStaked": "1049117.35678988"
     },
     "13": {
         "id": "8b61fd7a505240211c1a0e825575669ba0977d62c6270d9958bf50573c934b33",
         "role": "4",
-        "networkingAddress": "verification-046.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-046.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "f27b3f4f41b3f15d7bfd6ed74580401c02994e81b2ec1b90cce66e7463b87f44bb61373ba888137046fed5b702e4d158174b600a0d398d7638de78ff631f7c6e",
         "stakingKey": "8a86a4c6dff731aba2963766a55973d1437dadedfcf16782182a495fd2a4959cc22a101ad8bfca3d7e8d23e25bbe828402b165508f3609a70da708339b10be827fb854933ac4752309c323256b8779a52cde138f180d2a22001d9628cf979add",
         "tokensStaked": "900000.00000000",
@@ -142,7 +142,7 @@
     "14": {
         "id": "ef36a9e701f3c51a2f177507d86fe9f49e3d76b4746b7670993af39d21e8a3a5",
         "role": "4",
-        "networkingAddress": "verification-017.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-017.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "2420b20286aa9d739169316a8a8d2462ccd615724b8a24f11490bd761fcf9cda9afa31c5daa70ea9dacc9a9a8277dcb866afcc87b44ce0c89d68fdb0b32cd842",
         "stakingKey": "8cf6353e25ca66a09919df1625c41685da19e786ce67a63a6bc19314a7089c1cc8f362eefb589b2a82847a66791da658004d9bc26c3f0d53d4c567be9dda11ddccd0304c2d2dbd234b3f53d9a1ebc0be68afdc1e88a85c5c9b8598d5335e230c",
         "tokensStaked": "900000.00000000",
@@ -155,14 +155,14 @@
         "networkingAddress": "p2p.1acde8e1-21c9-4c78-b826-5d157b349cfe.flow.herd.run:3569",
         "networkingKey": "59a1bb1dc8cc0e5307a6e50506578928752482049f43e70500270a0c3c6e8c0d021be2b8c2a2dcd8cc9fad7187035f948e7095a210a6bfe2b370ac665261c216",
         "stakingKey": "8758089d6201a95780ed73d7074c0a6175eab46d1b6dd8df1fbce4773641e16e2dc172cfc29d67681e8fd011258b52660c17ceaebf996ddd115d6fda46e4c6d4e7de1c29d12804152233cf20d66d8f604507829cceba6405a92abe1441ef73f0",
-        "tokensStaked": "151456.43821767",
+        "tokensStaked": "152270.54431767",
         "delegatorIDCounter": "1",
         "delegatorStaked": "0.00000000"
     },
     "16": {
         "id": "80a0eaa9eb5fd541b2abbd1b5ffa79f0ae9a36973322556ebd4bdd3e1d9fe4cd",
         "role": "4",
-        "networkingAddress": "verification-011.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-011.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "6931b8d1320359e18822b7676a86da470435eb7410f6480eb20573adde92ddf316be040207b514c01bd183dba9c3c25a06b80f7f05984222a38778950d34f61d",
         "stakingKey": "9664a91bb918dd64c8ed660c2b265cc580124e54bd4f067a09c7ca0f5c558e55b7b8e085f49fa6a4bd6f27ef2d976cb10a95d910c5ba1600912cc402e8301230834d7969dda3c99049d300f9b8fe0be4b776eb94c2ae3b96ea9dd2c89c22663a",
         "tokensStaked": "900000.00000000",
@@ -172,7 +172,7 @@
     "17": {
         "id": "b58957257fa35ccd3a86679db97eea3324116e8a99d98689bd25f562dd27adcd",
         "role": "4",
-        "networkingAddress": "verification-015.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-015.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "e2848b6e02e2771c5795a66cc416fa681a42d6727c631d762014ce6cce45f1e24fe7175058a65aab25792745ff9ebd639dcfdaf3442b5f8061db9c19d074cb98",
         "stakingKey": "8950779ce63ac164cf417d14d991aac80074dded8d808e05151de9add0ec7d0487655b720cfe35e2ec73363e786789bf18644cb49efc14cac52ffedeb762b11efd45b051548a50380e5b9bb25e3bd5163d4207acca60df108fc7f732d56ac931",
         "tokensStaked": "900000.00000000",
@@ -186,8 +186,8 @@
         "networkingKey": "b722b50f98670fd55eb1958ddf9eafc7c926f43e79c03c86b8773ea38c4901729d38e06779a8bb904557a5559d51da0a44913fb6f47bea854bb54bd2b9bb122f",
         "stakingKey": "b8329dbafbd9f587bcffb98e5227c1ce7c80429329158b0c346bdbeebc250e47f52446eec0128b4e3bb19d3094c401f20f80936406e5d813d1a87db00e6a307b788c304929396ecdb1f8b73e7f996de807b68f74b5ce493296ed2d295557c831",
         "tokensStaked": "500000.00000000",
-        "delegatorIDCounter": "76",
-        "delegatorStaked": "8005.89137000"
+        "delegatorIDCounter": "78",
+        "delegatorStaked": "14020.12153877"
     },
     "19": {
         "id": "f7422f2d3296ede4d1efb36ec55e3fd93702c061f7ee627881f0b3007beff2ed",
@@ -196,13 +196,13 @@
         "networkingKey": "0a16beeafaecefff70ecf3ea2c24f938b18fb667d9d928534f7f9bfeec5a06716d81e69f94a31598b83b312647da6836580341432b6f1d21300cd86ac6fe5fc9",
         "stakingKey": "8a908a822130617ce670c8d5489824ea5d52a6540badc586cdea14414eea0617a0e31c8ead2eb26b13b9e3b7b7551eed0a8b611b0e8ebf2bbf1720216eb1845509e2cd60619852569d5c7f127ed18664048a0226d7feb59b04bdf4aa242587a2",
         "tokensStaked": "147027.34574687",
-        "delegatorIDCounter": "335",
-        "delegatorStaked": "800154.11058576"
+        "delegatorIDCounter": "338",
+        "delegatorStaked": "801318.34534432"
     },
     "20": {
         "id": "d57c5608d5fd1970965d72d52727a49e698b1fa7f478ded149c91bede0c3d458",
         "role": "4",
-        "networkingAddress": "verification-042.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-042.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "49a506a949802594e20d385d317893eb0a0b1d4f24fa8ec68376e1388b1da56eb3770f9a94a0aa9b1ab5b92ee1f6212b085f92031e8374eb8d6f3b0629abd7dd",
         "stakingKey": "98b6b24a3ab34cb793fc00543899be99c837ab7b8f70a3f4080126e9db9ebff7753ca273849df30ddfbae96bcb66c0fd1316def8aa67d361fa0e2d366866e361039018d67edd30e3cabfacfaf55838d84648346a8f5ee7d978745c3b0f7268a7",
         "tokensStaked": "900000.00000000",
@@ -212,7 +212,7 @@
     "21": {
         "id": "e7e46cd698170b1f86bc9116dded0ac7df6ea0d86c41788c599fa77072059ea1",
         "role": "4",
-        "networkingAddress": "verification-003.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-003.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "7f024b7f091a6d4ef556aad383da2ff7bdb45fe328dd808ac28ca659fe0e66d2af936cf7c08cdf7f34ae7045c6470fb21aeb2db31677723232538f4e17474daf",
         "stakingKey": "951fba1fa145863a5aa41169d07d8264d08427d1818758e92114e07f0ad4a63372425c5eef8517d4ab482eb9e54124a00dd339666852eaee17f2d2b98bb25f43c8163064e2f8a96b21d73fdcd8f1a7a92109a02932f1f5ba4787864e657642ad",
         "tokensStaked": "900000.00000000",
@@ -222,7 +222,7 @@
     "22": {
         "id": "9ad707b923c0826ffcaca8725e208e2cbd4046626fb8fd902e7dd2bcb065c60b",
         "role": "4",
-        "networkingAddress": "verification-041.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-041.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "94d3bff4a06ac5df1eebedb3edbafab043bb35402499581ae4537349415ec32a42ddc70f5530b9fa5866a01b89b4fd6b07036b548e88ae381322a28df6e935e1",
         "stakingKey": "93c50e7b3aeed716171c9ff190b96fbc2f029caf30694da20dac0c1be331aa8121bf830fb22880ae6058cb99d7badf0303b85d5135f6d5dd5ef49cb78515664c58fccd5098e20f4087fc95e308c00656decc062a4deea2c9fbe42c6d445921b7",
         "tokensStaked": "900000.00000000",
@@ -232,7 +232,7 @@
     "23": {
         "id": "158f84731596a91908bf40bdd1393d34ebcd7c6c41e93df58f0b5b12cc8e294e",
         "role": "4",
-        "networkingAddress": "verification-007.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-007.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "8186cf66d8b715282a1c932acadf0e7354248093c1872e7c6ad750f3bd42c6d29d32f2098fffba00e9c8e139fb3804708a53242807fbc954c14edd6f52e0ea27",
         "stakingKey": "b8ad9c4fd35f33d5b5edf2286ae2c54f20e7da0c41d713027e60282462ba4e1593635429794879de4d70e32ebb37e9a60ac56093d7d092b03bdfcbf53ca9919083f3aebb1a9d7802e9df86187c4eb06e50547437a0648464027f9ec3cd42a723",
         "tokensStaked": "900000.00000000",
@@ -245,9 +245,9 @@
         "networkingAddress": "verification.mainnet.flow-nodes.nu.fi:3569",
         "networkingKey": "24644d52a709b166af9363296faab4d00e8fd14f7e1c1ddb7e3f2f3e79893012177ed8e3e77345e0c60985e826af486cd4fa3db47af9f7df00dd432401ac3f0b",
         "stakingKey": "98f1d134dad6948852b891b5c5b9fdbe0c248c59c8f08b7439bd924215966238884458abcd4743e2684be1df022777a90c10e309df641ab8b7cea862447c9ba8e93b10e04be7c24694eeb23995878710e3d6cb6fbd7d0cf33bd16f220ec47b4e",
-        "tokensStaked": "137380.00000000",
-        "delegatorIDCounter": "31",
-        "delegatorStaked": "7212.21479837"
+        "tokensStaked": "138423.00000000",
+        "delegatorIDCounter": "36",
+        "delegatorStaked": "9940.01496222"
     },
     "25": {
         "id": "94609410b05584616f628f98a26acec339f7e1ce43132f0d8d268540317023d8",
@@ -255,14 +255,14 @@
         "networkingAddress": "p2p.7688a842-f99c-4986-b6e9-69bf1a069bf6.flow.bison.run:3569",
         "networkingKey": "102c1093e5e110478d382363b2d6823dc68ddcf3957049ef9d9b3550353e6882652b854092427bfb470842716f31a78127be35779d50c7adcbd430554e634239",
         "stakingKey": "92ada4396a477158a9eac2ac2737a9312c781048a9780d38f795dee6b014c70e8d964e67edf5ad39472525fa7ef93dc614d800375205eeddb0a45395b35bb46b094ebde6995ba59506f758e9cd8f53951e2f1ef957268242040570398e4e2b79",
-        "tokensStaked": "399416.76903000",
-        "delegatorIDCounter": "24",
-        "delegatorStaked": "26546.58820772"
+        "tokensStaked": "199708.39904000",
+        "delegatorIDCounter": "26",
+        "delegatorStaked": "21586.99861499"
     },
     "26": {
         "id": "ffc1b52afd1b96a04ac702355d05417c86e044b78d92aeef5fd5b799f9ff99f3",
         "role": "4",
-        "networkingAddress": "verification-014.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-014.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "774e6f7952b2c9305505c5662a6a46349c04062f7e4f288b715ab41efd2c836c7df1dea4855673ca468f71027efa1e3a4375a4dda35baa4c9dcd3f1cdd709506",
         "stakingKey": "8921cc43429054f311564c76cf93550c34675423b74ec6d27a650b8650e194466e189df70f25947bf8021d4030db5160024f77578e0bcf07db347f32b476c20474984a35228765cc291f76f4437ff0081d6f0067e4249b6d4673432fb537b584",
         "tokensStaked": "900000.00000000",
@@ -272,7 +272,7 @@
     "27": {
         "id": "974a7f3b64d4ac82c6260ed4b390add31b043e54fd28c99fbcf9b335182f8c20",
         "role": "4",
-        "networkingAddress": "verification-039.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-039.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "38fae70f443e985a618d1b185e00b238378f903aa83836e2be29ba17e06ef3a063501a905dce3ca69f20aded418016a046d1d4f7311fae443c4d933c1602faef",
         "stakingKey": "ad7a0e3c069dfb216c6262ab89ef36cb6f5e385b996e5d79abe3fb2a559faf18b531ee997e38eaded0424c74844e2a2312e8233820549e23bc99bce7284bf9292e866ced566bbe41307435297c5ae71c43b9793fb1d928002d42ea4fba00474a",
         "tokensStaked": "900000.00000000",
@@ -282,7 +282,7 @@
     "28": {
         "id": "00b7793649e34f52e38c6848e036c2e408f9594bdce4eb6e414b763727d07c9a",
         "role": "4",
-        "networkingAddress": "verification-009.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-009.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "e0c141fc192cfdced2a3c8d28ab016a31ae3165d0df43e59200187e36ba079d55e7d38cf7a082c7550af716bca27238ef388260e53257802869120f7df2f4dfb",
         "stakingKey": "b8da9ac086419ca4d1755a9ef8a94001969fc3b13796324832490dae627d4dcdb5179cf19995ba90406f0d9031056deb08ddb205b75bfa8208861ce53821c6d1b54214b76356c7f55abe8055c91b32e456fb4c2e674acb917609a8394f32c60a",
         "tokensStaked": "900000.00000000",
@@ -292,7 +292,7 @@
     "29": {
         "id": "10172087b3875a619666fb7fa23e673fd2114d7c0a25bf1ee3e932a4196af73b",
         "role": "4",
-        "networkingAddress": "verification-044.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-044.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "ea33d966c76b9479cfb379cf923e58c0f34ce44b92982bbf1a164dc1fe7636d0e9faa6ebb228ce5dfaa5d001f050b6887632763b53f43cd54634a876a200015d",
         "stakingKey": "8ddf520a51274701e487fa00cb051071adaa73a5647018f21e2a477569778facd556746817e7c7bcb55c8c25f0a8ebb409ba08def781d436b19935f352684a41f734546dcbfbbb7a482a06816d4731b53003ea9e80a573187dd2c9bbb4813bd9",
         "tokensStaked": "900000.00000000",
@@ -302,7 +302,7 @@
     "30": {
         "id": "83dd6a1c8d766ebd6d0f53af61250df149c6151287dda7e019ea324a5af0d467",
         "role": "4",
-        "networkingAddress": "verification-002.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-002.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "5da6eb6e3fbd03616b61b0851ce7ca0137e93d58628d35055c0e7259f44a9c27ca07c8037fb03d4ef858bb649c7f51ea45c1c0da2c348a619d8e1e5dcd3ed817",
         "stakingKey": "94faa1015538ff10ec5f4906fcdfa467c3d941a036b99dbb78be8f7837883d7aa932b2df0957aa4a09a532d19a27ee980b4e8e1a7d5a35fe50894fb34a58671415f508551d1afec628f74dbf0dc7cfb0f366fc545066cd6004bb1e103491d849",
         "tokensStaked": "900000.00000000",
@@ -312,7 +312,7 @@
     "31": {
         "id": "84823b59e78c3fa2f3cb691a9bf86049ff0da34151c02ee40990e24f0d1b3b32",
         "role": "4",
-        "networkingAddress": "verification-012.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-012.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "83b89515fb36974398cbe4144ddca3c5146a112e55ee858ff9673d664192de2bbe62a83260fe11182c745a00247680f556d9ae1414d0af732918da250356667d",
         "stakingKey": "8c47296c8910bfdc0dba47e18fda54f20aa74d29fdce1f6ec4f17f9b9da09d96e720429d1f5eb32a650daac996e0326c1153faf3e2c3bfea70ac537012d49cdae38771daea82e02d459fca4e87a072f1caa872a5c9f475112d043b67e68be6ce",
         "tokensStaked": "900000.00000000",
@@ -322,7 +322,7 @@
     "32": {
         "id": "5663a31856faeef7b177af927f23cbae40a89f1a0d0ac4429e7f4ab4fca48459",
         "role": "4",
-        "networkingAddress": "verification-028.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-028.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "832de99207191ba5f9516a1e7af39e52d47922c3469d3a18fefffba2f019f4375536f6a4bd0abd02d3770a1d3777dd32ba845e0870afe644f510117f5573c219",
         "stakingKey": "abcd01691bec16999742d8457787a2908ee37ff6b307e2626ddc0f85683cef3f76ded51fbe116b6cf24cbae00b2ad48d07bdc237b4c27508761ada58b2f52e962f28adf7663ed4a1aa6647ef6dbf71ff758a14b52006c0d9681f4a64550bcfe7",
         "tokensStaked": "900000.00000000",
@@ -332,7 +332,7 @@
     "33": {
         "id": "f59d6a1c77994528ac7782652a487746d81334b68fdf12bd3a7488d6d3625c0c",
         "role": "4",
-        "networkingAddress": "verification-036.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-036.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "cef5d8348d5f221adfb69d5aeb3aaaca43e3de3a6c0bd65a31706029dd86b28c5aca871012639e80841f170a8fc62c4d59352cd76065a60146fc8bb3190924df",
         "stakingKey": "84521d484df7a879466be5b6bb1c61907bae69a4669cd87cc7a639b2c76a003864b00dd8578bec9ce6becfda2a5c459a01662486c27a336b4c6da9a8a2d2ce23580205e3d1fc74984e117a7f28f006ff84571e2fc53f50abf87aac3cd2cc12db",
         "tokensStaked": "900000.00000000",
@@ -342,7 +342,7 @@
     "34": {
         "id": "ebe19fbef069f6962ca9b5d4f654b9f9e1fcfe392dbd93e6a40b5c46f9afb37e",
         "role": "4",
-        "networkingAddress": "verification-013.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-013.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "3ad7261fd4e6b99e347464ca7eb58be416e7212e07a9ef695ed712705a98c6bef5ce7a7eddbe63da054124febaa587fde3f404b795d52209f25a6292fbda00de",
         "stakingKey": "8aa4263cca0897ec2851211aeb55d46b694fce25c8cbfcf3679c3c937303920ae9c5070aadd8332568edddc04261f54b1128c1e142d024c9a41659d8fcf68def80206d8da8aa804c712d8b98fd7ba0ba5a8f7b4ef28096efca2ba993768a1e5f",
         "tokensStaked": "900000.00000000",
@@ -352,7 +352,7 @@
     "35": {
         "id": "64889e95c1eb8c1db3dd37b616afbf4d54718525ea6a17b6785a250f9e8abee4",
         "role": "4",
-        "networkingAddress": "verification-032.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-032.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "d880f87eb05e2aa8ed0e63cb96052f26d32edc1a1306264f9e64239a193e172d3b04445f9ed337e1a57ac8dfd60d118984b9f71f0bb67c597db79dd6a73acbd8",
         "stakingKey": "b1e19248f143eaa37fab8f505a6e756eb39459244497ddf54eb363ef0998af7d8588dcc15d0539f726cf4a1b5cdd469507611c8c35baf35c3606c731b6bd940b474d897bd8afcb5d62ab2b7f14559f4d3dc42aa66da601c48655cf98fe8c65c0",
         "tokensStaked": "900000.00000000",
@@ -366,13 +366,13 @@
         "networkingKey": "aff9e0d382c0ea7d970709cea68398c427ce0e67f4617c9276f9041fd731fce2699906d9f51a39e2baebca91b3236aa16fa9e55f779ee0e12456cae3ae79a719",
         "stakingKey": "8956de8bbbe4371fa762b4971b8475a2fee8f74e289e1738de6ce4a0c8c3fe8036560bbb880998441f5837b5c0d55d3d15d81e56f32dbc03f19df39963bfada3680fe336e1100d3ae3eddd0ce131cc9f6246c3e8b65a092dc45c82e1bf69a3ad",
         "tokensStaked": "135000.00000000",
-        "delegatorIDCounter": "22",
-        "delegatorStaked": "2352.60019919"
+        "delegatorIDCounter": "23",
+        "delegatorStaked": "2836.14741070"
     },
     "37": {
         "id": "b2e8f0a2492adba4071e352a88135db972f755e81836a717e0e1d2feffb116c6",
         "role": "4",
-        "networkingAddress": "verification-038.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-038.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "158a777a79c288b95b2197cb89450a58c4b2bca07288fff52c7b6b5dde40d54b81932774fbb48dfb40886e08fb17c30ce6fb3e7b965dbb63928fca88b13ee02a",
         "stakingKey": "a2c04b953e9c6fb51267deadaf78aa2fd5097157e287d69fde39948cdde46f1cb5c648b4113bc1b3dd1bddff07c1fd530dc27a45ea51c56ddddd790e3e859188f6a7d5204028e97f1e5c8bab18d6b1c6af58380fb5053fca88f387a6c69ac37f",
         "tokensStaked": "900000.00000000",
@@ -382,7 +382,7 @@
     "38": {
         "id": "9cbd43b05cc21cac0d4769913867472b8b2aa08ce54455afdf535b8a7b82e16a",
         "role": "4",
-        "networkingAddress": "verification-050.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-050.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "b4f76fe22500b8be6eb9ab51606bc472243ed18fefed386ad0414aae837ab16ff3e64343c49f94aaef2b1102a3b5a57a05c7a6d4ccd18b2a342f7e9c4bbe9ea3",
         "stakingKey": "b96c106aed817cae429a3faa961fd2f003aae2b63c777b5d5bcb6629c68a79a1ccb4706945d15bb7b2bb018750c565c51653d4f941aae514183025ad09732b5959b44f22f870f7c452d27d232a422cb8fa0837474bea6e1b168282d000f89a6a",
         "tokensStaked": "900000.00000000",
@@ -395,9 +395,9 @@
         "networkingAddress": "anchorage-ver-0.bdnodes.net:3569",
         "networkingKey": "64626a58f76e002f5b51d3516fa100342ae0862412e5c875a2154447b315e967ff7913f7028ef6e5e11e0b4d736a68e6f3a408a59289f3dbf9bace680da377c7",
         "stakingKey": "95d71ed8a53809d602d63b456e87fb719d0ccf7dd7c419b6ad0a34da027b2d2e3de9b4b205b0ac72e5a196a4f75d90000e81f245b33360e1cd984bc579af589f98e64320b543cdb0d0c314eb69bfadec4bdf5be989889f8897a2ee983ae3dcda",
-        "tokensStaked": "230368.37406104",
-        "delegatorIDCounter": "29",
-        "delegatorStaked": "27114186.20091483"
+        "tokensStaked": "246336.56015372",
+        "delegatorIDCounter": "32",
+        "delegatorStaked": "24342457.61605613"
     },
     "40": {
         "id": "d5ac048967388a9f021f33f1a30141ab6f39cddec10f762c86b11a55aaa9c4f9",
@@ -407,12 +407,12 @@
         "stakingKey": "822aa5ea69d0f92f3860f3331de6607b4b473d1a065d5a082465e9a487489c1ecb86c136c48027a41ebb4efbf0a7176f13a08edea9d8c3b781234446b5601779a0dc07467f8f2a2fff2b670363b6095a3af1f935a27262ea8c99d835d3ebc83b",
         "tokensStaked": "135000.00000000",
         "delegatorIDCounter": "282",
-        "delegatorStaked": "794132.56842130"
+        "delegatorStaked": "681884.21523877"
     },
     "41": {
         "id": "8d125842aba22307048b6467d4c80db8eac7ea73db2978f13039a8be00cb7f75",
         "role": "4",
-        "networkingAddress": "verification-040.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-040.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "b90598f172540347f31417fd805febecb6decfa862590d49693c106a0f3baf2096abfcfabcfde0c28d7009122b53a4ea668689589a4a0eab57ec4fb42d072c55",
         "stakingKey": "98a6181af3b0c8abe063120ad6405bd59a9815e9c5e36354d6d7bcd1f2185e76bcd2264f2bf41485fe9fcddc01c468730804d8f39720cb08168dfa7c929bcf849357f54c4fb3789c5425f412eece6aa3a616adf0d7214e335bc5712490e227a5",
         "tokensStaked": "900000.00000000",
@@ -422,7 +422,7 @@
     "42": {
         "id": "26c1cd3254ec259b4faea0f53e3a446539256d81f0c06fff430690433d69731f",
         "role": "4",
-        "networkingAddress": "verification-001.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-001.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "9d25887798c6774ce009bd7b2ac4dde023b6e3694a465b6cf4b69ba429b8999b3ef8c703cb21154eaa40be296b232d3d94d351b2d023f11b1d3ac1af58ff9d4d",
         "stakingKey": "b05920f227823f20a676c3376506aa9217d394746ad073ab63371ca3c2bdf8093f974f5285b7ca6f92b9ed8dbf2ce31c0b4e71305ea27939f78bf27ec1e3080075199c5025a3676013ba7c173d905f290471059a952a80d79cc36f839bdf0d3e",
         "tokensStaked": "900000.00000000",
@@ -432,7 +432,7 @@
     "43": {
         "id": "29013547031b4645d970b1fe193a14e7617dac727cc1a872cb50930e562717d7",
         "role": "4",
-        "networkingAddress": "verification-047.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-047.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "fd00cd1bb1fa8b7749fc142e037b34e16b2283244cb4f8c8155e3c32d4b08ee4495ec982d6e79d45b7206e31b5b6a3ccf0e3c2a06f3e93cf93b925484573c653",
         "stakingKey": "a389e80008e88421692cb3a4a56ab69f5b86b091ddbf990a9d2452938d09aef45c38b3e03372b03861b7bae7b5869f0e00c7200dffa240c4149d867aa97fb458a2e3edf2410ebfa051cc04309ad640e3071ee489853afb1fc83e3d4ccd8771f9",
         "tokensStaked": "900000.00000000",
@@ -442,7 +442,7 @@
     "44": {
         "id": "b7486c46efaa819845edf81ae3353f80088f06ffa9ab2a8f19a83492110a5d8d",
         "role": "4",
-        "networkingAddress": "verification-045.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-045.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "d2073173e9124d2523be6d4b05f2fc81b6ebc0ab73c5c867fc2ae23ca6c452ddae5b9419bde9118b7bca7b8c932991bf23e3ba1053509f869ddd61e007f90e8e",
         "stakingKey": "a45e59454717938be27b26319b922e2b459065b1e40a82f4cd7cb7b0e4e8cff17e8e24425cad1161570516c5f89c244413b610aacac2794a42b1c9e6c701dfe5965d1918ecb78fcc975e6d4f261ba5da9d6f66524ba4d8720a02839253815afb",
         "tokensStaked": "900000.00000000",
@@ -452,7 +452,7 @@
     "45": {
         "id": "3a3f63552135932b55b3019b55d0330b3853bc5a08bd4070b8a203b40da0c0a7",
         "role": "4",
-        "networkingAddress": "verification-043.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-043.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "b00629aeba7dda07cae2410bfdd9498b28a7dce520b976750c65915675ff02674ff089122dc643192ab9ce10373b36c925702565a2d50e51fafb43b79e1c1b6e",
         "stakingKey": "a803489ae6cf3f28403c0dc9ddd0dd38bfaf828e1e8bfe6ece54b3825e4c1498b48ba12aff2b67a32d59cc3b82b00f6507d0ed1abc4b37c68670e7d1adced4b66e5b7d08626fc4e56863681f74d646015e07fb38098c69d36762b009d5135a8a",
         "tokensStaked": "900000.00000000",
@@ -462,7 +462,7 @@
     "46": {
         "id": "902cc9043b4496907df8a8f6b817073bd9619f414e8c1af8dd22e14844f03392",
         "role": "4",
-        "networkingAddress": "verification-019.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-019.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "c480e070a14ed5dab2848529a2940ccd1ff92e1a714cfae56aec4cee4ac6ac7860cc087a758b97d007d3a7faf9440e5b9c72bfab1c894797e2c7f2fc23ff6e93",
         "stakingKey": "82e5499dc8565308091543fd6a7e31d11a694d3ada06fd02b9587b2b222b5d268e88bc166861d3d3172282c08f7d627e1681c6c54af7ff49e46553c074f9c9d53f7f6d7bddf1c2a1e1be01606930a151c20870842400e3c65cadfa67ddcea645",
         "tokensStaked": "900000.00000000",
@@ -482,7 +482,7 @@
     "48": {
         "id": "c0a3594981c980c587a71e62f8f7939121ec87ee723199d4051fbfb42185f487",
         "role": "4",
-        "networkingAddress": "verification-034.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-034.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "ba91d070dbd0e5a52c22b7f3ed275983d3fc6d06ed8a7e56d4ebca08328a972a80a1785bb51fc2b9e4ef3474fdf1ef7c3d31688de15af27de86e51766468f95d",
         "stakingKey": "b542d4ff35cc1126c6d3042f805e13f4b601b2b3ecc7f4d820884f1cd87bfd061b7cab96e11d25e8a57e6868302946da092d07495e841418c25a79444ac3e2ca99be6d15da4089d5d62293923dac726417042561c13cf6157dd5536d6439b4c0",
         "tokensStaked": "900000.00000000",
@@ -492,7 +492,7 @@
     "49": {
         "id": "446ae6d5ebdf6bc45aee29ed3b8da8dcf155afff87296401a3c0a28206121bcc",
         "role": "4",
-        "networkingAddress": "verification-004.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-004.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "bea4a617666198223958015f0ccdd72858beaa89476e61d733bb01807ad17fab70b241c1214fef27e856b06a951ff3aa3ed3e9409be606b89aca595067fd1a02",
         "stakingKey": "8d58da979255dd2a925947097b408a58fbda7c1daf4b657771ff4307c8f97f4dc1109a48130e15dfd0932aa76142148b0cba99e0b472697dda76d86be298b433275623f85878121f0cbf04d7036b8da8e7d86c87df0ec3c86608fc4e45857a94",
         "tokensStaked": "900000.00000000",
@@ -502,7 +502,7 @@
     "50": {
         "id": "c6d6c9ade8518d9924c0709052c38e1f0965b364cea81a6853e83f5fb1f4c09f",
         "role": "4",
-        "networkingAddress": "verification-010.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-010.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "e395e3ab9afe47655cf98e68bac7b11f739012c4eb197f9c05587ed357a2902219aab1e3742cefc2968d953db480211ffcb2a4cf33ab6691ec67a3cfae2a5cef",
         "stakingKey": "811b3a1ee81264bb2d5830de7012ec9f3d68c68c5bfb44cea4ecdcad9eef5bc6a269c3c6b708ebf194d2952c7901e72c094c23104edf01c3b2f13a43668cfb586d170d4effbd90d1ca5f15431bdeb660e06c70aa611fa2daa63fbfaedb019227",
         "tokensStaked": "900000.00000000",
@@ -516,13 +516,13 @@
         "networkingKey": "f9e51197d031dc0c37fbf7dbf91a2c1bc591a073a03183fd4bf32280ea7c7c91207b2790c0fe8b1843ab0a4d3cc70eee058fe5ffb783a42aab9f0f932681fc3c",
         "stakingKey": "a6f34934331bb15985b4fdd3b80b05b4d500f3ea221abb2757f3647df9894d412b669886a57fd95e74997a8e5e990f341425a9bc152bd89d20e0e4bddddfc60b4e092fdf169ec756ff732ad97e1fbb7c6b762fa7a2d434bb2a1ca83cb48fc380",
         "tokensStaked": "135000.00000000",
-        "delegatorIDCounter": "38",
-        "delegatorStaked": "88984.62463193"
+        "delegatorIDCounter": "39",
+        "delegatorStaked": "65111.75395097"
     },
     "52": {
         "id": "cf4e3be605a53b271e1f32dcb602db60f7f73cf39424f8ecb6c1ad6325d78441",
         "role": "4",
-        "networkingAddress": "verification-029.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-029.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "4a95a8969ad74b72c701f7523a5ccec854336c2fc4fa49820bb42536c6745e5313646dc379c886c3fe2b095b07ecd889eae24d3b98f7e5405630a168426734bb",
         "stakingKey": "98fac51834487cf2c4a8de5d05d5b40617e92060444b8bab656f8c1a375225ce7b5ed3bb0275ba097cd8e1ffe536107d0aed5c4fa56ac47fcd76ebb04a0f354c43b3f5fc2ba3e64ecbf589db1bab4c2e6fb1b305d2e8b17cd58b3fb72a9f4e68",
         "tokensStaked": "900000.00000000",
@@ -535,14 +535,14 @@
         "networkingAddress": "35.197.95.136:3569",
         "networkingKey": "5269ff1d307b260653ea5418a296d15e1407838f2e742c60e67ed037d626f7bf212292f017f8817ccd52a69c947496e011fd4133d373045ff59d29dcad6fee86",
         "stakingKey": "887e2bc0848344b46e5cf3a5788524855e37ea24ac30ac0a5da1af57d148b48f1a61fb6fabd91bd8c1495680d43c56a7072681e82abea5ffe0edfb8093248bf800cc1961a8891c43dc80f656b30b19ce91d6c3d882b5b1df92a49401d7cbfbfa",
-        "tokensStaked": "349724.33447998",
+        "tokensStaked": "350417.31198630",
         "delegatorIDCounter": "6",
-        "delegatorStaked": "462298.36539286"
+        "delegatorStaked": "462300.26539286"
     },
     "54": {
         "id": "e0513ff9a9ade5fea5bfb4f8f56bd05ab9b7384414e6ab1bbc8e3de6d6757ea5",
         "role": "4",
-        "networkingAddress": "verification-049.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-049.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "cce05ca6946ec21a175f16bc79348cda5396eec00f66a148c5eca77f9c37b17921c3fbb07bc69e7620bb01e49f9479549cbcd136dd0bde257fcfbfbc6efe3f0e",
         "stakingKey": "95de8e38be29d3b3cc8e1f58e5645f706641961ee05806fca3a2bd03c1be56dc1f2a584d2837da7df704a97671833c81005a3f67ce222250a7a821b9cfa16e14cf24532c9da37d20524a832884405eacb1837c670b2e83de102eeb1da9ecb335",
         "tokensStaked": "900000.00000000",
@@ -552,7 +552,7 @@
     "55": {
         "id": "8ee295a1c9bc97b84a7fe1f56a90156ce1ad20be3564c10c1e9373315dfc8de4",
         "role": "4",
-        "networkingAddress": "verification-023.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-023.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "120436b72f16a3cdb6ec67c79a2a74e931374d7be5fa8b674b6189daa174ee376aa304f816c818aa8ebac0707e6b1a7c33297ca99a544a33e50f1349e72178b9",
         "stakingKey": "aecb1336cd3d2fa249720c3ce391579f323a53c3627df67bac9649218f9fbacc9e3bb2c1ff747a78fe02ef4ddb4a99bf16fbc24a174bc894e317a94864e36638a765eecdfce2e8627a6e798a39dbadae2049dbca55d79b0f3d16fb0ddf94af26",
         "tokensStaked": "900000.00000000",
@@ -562,7 +562,7 @@
     "56": {
         "id": "fa5f24a66c2f177ebc09b8b51429e9f157037880290e7858f4336479e57dc26b",
         "role": "4",
-        "networkingAddress": "verification-020.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-020.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "58c3c193b258d269f4fc484a26f24c9391cfd8986b4173b6a41b6d036016d207a33eb008c68933245039c9ce2b7ab256c1de0bce0093050fa4c57c6138f36efc",
         "stakingKey": "a933837ddaf0b238b19a9fe83b25b5992f3fa61fec1835d4286dc46c0756d03982c107c5c81d9ce50cba2134fa9ca01b117627da66465d9630e46e1301556ab17bd3a722d0782a5ace3fe8228f98184758d6f19028d8a8c3b06c6fa48b70ebf2",
         "tokensStaked": "900000.00000000",
@@ -576,13 +576,13 @@
         "networkingKey": "94aabc1693c8f3a8383b898c93b72b5d3807a69742b45ab629ceea721da60a2c7248fcbe74ecd4de1f1c970bd7e30af0adfb5fd06a1fa8e6cfe1c3c17530b3de",
         "stakingKey": "9502246773d10f003d66793c2d70e54ee3f37597af11e173207838bedcb3620bc8350a5e7f06e4945ce4577af38f0dfe07c4616ddb2c5dd4d1777799fb6e89c8d68339f2f589f1b7f22c6ea3514bc35cd5b42609b47f257ff3fc3cf541dad2aa",
         "tokensStaked": "135000.00000000",
-        "delegatorIDCounter": "3",
-        "delegatorStaked": "306915.00584494"
+        "delegatorIDCounter": "4",
+        "delegatorStaked": "308949.98100000"
     },
     "58": {
         "id": "bd20835eed1d5a96f8554467cd0bffb8d117ea8844704ebfe82b3a69756e5fb0",
         "role": "4",
-        "networkingAddress": "verification-035.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-035.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "14c669b821b52055ff3a27e828367e3d43573ca549010ccf290ae1b24edb0f7b552d5e7c78dbd1c7c64403500ef67f38e47163a289aae96a4a0e3aa94c2ee369",
         "stakingKey": "b07e8c47bd30537b25709428fb7d88f9a4b9f5427cd8d8e41a2ea97eb329079cd2fdb61a6fbb2a5a57198883814e4c800d4699dedb7b41e9d6036d6dc52bf045f6f4a86642590c3463d81c0f2318fac6831448c40402cbc4abbedb32da064e0e",
         "tokensStaked": "900000.00000000",
@@ -597,12 +597,12 @@
         "stakingKey": "96e4ae32e76fb81d48a597ed32f74e3ada65c820a602ce438168b4d83e7d8ded813e4f928f93dcb5ba688f7070ed4f121689beeaf9abd51b234a19cb3337cda88ef6fd7cd96fb6d289ce6fe9908fc9683e1e4b017ed1aa91783af93c37686f81",
         "tokensStaked": "148734.67019762",
         "delegatorIDCounter": "26",
-        "delegatorStaked": "392250.17556668"
+        "delegatorStaked": "395279.95289496"
     },
     "60": {
         "id": "097e5e879e9c93f7e45f696b64f701f70215608b337ccfbc13ca3370f7a9e617",
         "role": "4",
-        "networkingAddress": "verification-025.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-025.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "5e3069c76d837e2e6e90632c40d9a02a76e3fd3d169c8dfb6bfd5e49028881159a0ee77ece3292b999276ef8b28106f01477d4474776dc1eb7995e6acdfdb8b6",
         "stakingKey": "b98cac92e8a683f8d95cd2501c638a31f8bcfcef458265992f25a3e59d87c4af23c96ff26237e7b485a2471c63ee6bac0374722847bd7b7f2d838ddc937881f853b0cd52aee3aa1d6ce01249f855eea76a25864ea9f744063f16b58cc9bb71af",
         "tokensStaked": "900000.00000000",
@@ -612,7 +612,7 @@
     "61": {
         "id": "410aa9caa27d1f20777cdcb6cf7d8477e48850c9d48ec0718d2570bcb4a5223e",
         "role": "4",
-        "networkingAddress": "verification-033.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-033.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "e06c7c8d03e716a89c9fe7c3f1271f16f70288b053d01fac7a635963fcbb121540336c37da0f90a2ba0249287d6442c86bffab544c37467155547047ddd4dbcf",
         "stakingKey": "b74c1a54a7ab70f2651aca3df90604683a5a88bf4ad3ee9fb329f6a678bc2816d1100fcc1f895234afd43404ff879a230a37b0276bdbca5e1fe1fa4e235c425131eccf5dd76a0edc83157c4f159ff948de096d36c4fda0c8530d686e736fb5ac",
         "tokensStaked": "900000.00000000",
@@ -626,8 +626,8 @@
         "networkingKey": "899c92553bfb5d338d9dbfa11aed9f4b93b7dcd52d14e964d01b29b56062e22782488343750d3c14e010ea5558d2c83ef37ed52715994c176a5d417fa46551dd",
         "stakingKey": "a2fd13ba0dc54e35ccf479f3282f191038c66cfb4bef3c230ae1a8a56c6375609ae73d98071a2e6c6b28ea02b12393280349a86af21d0ceae569433c65004470ae228ae8766f3afd1e8a23d5c16daeb472d64528602542e255211d5e704f8fb0",
         "tokensStaked": "152979.15522992",
-        "delegatorIDCounter": "95",
-        "delegatorStaked": "1148514.37217543"
+        "delegatorIDCounter": "101",
+        "delegatorStaked": "1151853.14283459"
     },
     "63": {
         "id": "1a671144c4e8def6ce53aa861e185ab22f559f8ba0e0ea6017b714f3b5be0d74",
@@ -642,7 +642,7 @@
     "64": {
         "id": "a3075cf9280cab4fa0b7b1e639b675bdae3e8874557d98ee78963f0799338a5f",
         "role": "4",
-        "networkingAddress": "verification-031.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-031.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "bd2f647c6ae932c753bdd1e7dfd82eb3836073feaec546f4362a8387b99040f53a5cd31ce8691d037e35340f039024ff36cd4954e9c7283027c878c11e29a520",
         "stakingKey": "b064991e1d602df48f4c846f96b94414e1963fbe669a9c452b0a7b417c4d34dd60629a2dfe8fc3a06b7c6c24d8d7aa5219c2c3cb36c42981999eacac152b5f5004c1b1c4b73e761128c3211de801bf84916665f5c4e409c707dda720fdd03991",
         "tokensStaked": "900000.00000000",
@@ -652,7 +652,7 @@
     "65": {
         "id": "9f8dc38d363f4e6840d0504e1d8ffdf2de38e5a07df99e66931551921dfee6c2",
         "role": "4",
-        "networkingAddress": "verification-016.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-016.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "394b1c618c531c5620c32bd6013b9caffe71c29ea89ce7dc5c4c0e08495c492e09125225854a34ac444e2ed3e688f2d75d5464fc260be33f0f98ede3ca8cc45f",
         "stakingKey": "ab4c8a94dc18a24ad0fc414dc2e4b611c5ce693d0dc8b633a871fe6603b4adf12822194dbb7a75f67a3cb8d1894b09ef0ce058b8aab3005a69b650ca31b98a8b24b322af308c9ba37fc2de24173395aad82b2150cb0b2fb337c68b2955605bf2",
         "tokensStaked": "900000.00000000",
@@ -665,14 +665,14 @@
         "networkingAddress": "flow-verification.portto.io:3569",
         "networkingKey": "f2088df24950b36bfab768aefda0d1a12eee0b9539862c398c2a0cac24f89fef77effb3fcbda3864cf1faf7399bda111ce76c0a83ece53ebf2fa02186edee840",
         "stakingKey": "822317ebc05a2f0f9b804df6f0dd242a51d3805d902ca60c1de80bc836934ea8d083129d86e0af52f6b86c6cfdfdee4615450e2df021eb6a92fcad2fd66ba2778da04d4bd02eda239a85f7dff2475040e3a5652c5fae3a5735e04ffb4c8d52d4",
-        "tokensStaked": "156425.32660143",
-        "delegatorIDCounter": "311",
-        "delegatorStaked": "467109.21066425"
+        "tokensStaked": "156764.84974817",
+        "delegatorIDCounter": "321",
+        "delegatorStaked": "637948.22186795"
     },
     "67": {
         "id": "c2980e0c9d352d5e8e6be190e8d10f3a04d6df960b4fa6609425e770913d2178",
         "role": "4",
-        "networkingAddress": "verification-021.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-021.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "f206aa2940f9c586ec5b416bbaf035d78a0f404e9498ced541887cab26ff5e3bba22ba1aa0d423d99c31f6a2f8b6286c738ff3dc0d200debee4614c275914e74",
         "stakingKey": "b7c4beda16ab589535abd48e4982e2dbb717e0f4356a1ad8a70e0748c3d24b76d591a354cf21c6ce9e1c69bf458a19ec070cfa390edc0d496a5af6de5ef755ad28841d1ab0b442d9ff3ae72ed70f5eb2e2246a4ec8c8b4ba59ae4210c142c5d9",
         "tokensStaked": "900000.00000000",
@@ -682,7 +682,7 @@
     "68": {
         "id": "0e684e47809d5c211aabb3c9b58d758b5871bcd58eb18c87ee1e6174801ae14b",
         "role": "4",
-        "networkingAddress": "verification-005.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-005.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "c5e990a5251ff42235813a9138a6de5484f8c5116b065b7c743faa8d42c35b5661960c70c3afc558965163196f5b5adbf0ef047e3220acf5e02dca5eb13297a8",
         "stakingKey": "a1432a861c683cb761642e34e0cbc204797186902f877087694263f8c18429f950da7b2101e722d9f76049077f606f4612a1ad933c13c6a61dbac2adf529da4c2d6a25b4d36be322996716b9d932c78d312e44306332e35052d29a8568256249",
         "tokensStaked": "900000.00000000",
@@ -695,9 +695,9 @@
         "networkingAddress": "p2p.3b32a399-ad83-41a7-968e-cb50de0c569a.flow.bison.run:3569",
         "networkingKey": "918927223ebcdc03b1b933a7ee3af5f978d46b17958ede9f24ea42b1cd8a419b9a0c517c47cba5c1ec07141b650c575bcf320cf59f778d4247407d6f45cedc8b",
         "stakingKey": "a328af84b1af3e6c99144fecbd9dd6e3526a5f634288efdda3e1d194c54d31d48c25fee7e47cae129af399fe6f0164ac040a4fc238a781ac7a084817f6f07b5f076c5508d698c97f6f70a2bf24c762701e126668b678f44d68f6ca9f491e51ff",
-        "tokensStaked": "175088.46000000",
-        "delegatorIDCounter": "29",
-        "delegatorStaked": "20903.69344801"
+        "tokensStaked": "160088.46000000",
+        "delegatorIDCounter": "30",
+        "delegatorStaked": "19339.54305839"
     },
     "70": {
         "id": "b17280bf57adad0de648d827a7ccbe81c74cf6a9cc44af4778587b133747a2f9",
@@ -706,8 +706,8 @@
         "networkingKey": "dff54c475b461eea56a241690d4fce7bd98605166fa14afcad82c717cc2dd9b27cf20336f7e3c13ff8187964c46deafbf7e7cd8389f29fca7af0750867c5f765",
         "stakingKey": "a56787e431367815abc9fd9ec5dea703cbfcf878a544eb4e4997d26158c2ae3ba31565b50cf34a9c054a6a230b1777471763abd75b9129662e6d0028f416cae82eb1b0a95b1129ebfb33549f829581546358488b0980b4741776c53f37a25ddd",
         "tokensStaked": "159122.78905589",
-        "delegatorIDCounter": "134",
-        "delegatorStaked": "525929.65073299"
+        "delegatorIDCounter": "137",
+        "delegatorStaked": "552083.11866365"
     },
     "71": {
         "id": "8790cc2cabdb172e5a96c24c150865031e1818f6f84fbd68894efd0d0d12dc96",
@@ -716,8 +716,8 @@
         "networkingKey": "9661e197747eba693532e8be91746a6b603bb1e7f34682631a1200e1e1783723513397aec6328ca84d8efbdc52a7f3accbf94a0235c524ebd555316249c39740",
         "stakingKey": "b035822e8c9e590e9537762f61470b3ae102a531062d262b3728432eeac3459a124eb9bdfcb298291daa3c367f346a5c063948d8675c51bb089eb065d3d4d7f9a1b01473d62be84915117cd0aed5d1ec5e7301cc05e51f38fd4e9e7a1e14e7f8",
         "tokensStaked": "153980.07192145",
-        "delegatorIDCounter": "25",
-        "delegatorStaked": "2744.64989318"
+        "delegatorIDCounter": "29",
+        "delegatorStaked": "2957.06289318"
     },
     "72": {
         "id": "8f8d77ba98d1606b19fce8f6d35908bfc29ea171c02879162f6755c05e0ca1ee",
@@ -725,14 +725,14 @@
         "networkingAddress": "167.71.116.173:3569",
         "networkingKey": "88b2dd3fcbb0a94374a1ac72f3edb2c56b8be748a94879a67bfa84d92eaaba469cde508a7efade82be751125f3f1a968746e08032ce609db9bfe880713c57fa3",
         "stakingKey": "a5beaa5005c41db4a54531d440a9b0fe19872844ce6a8aee59edefe34988503fc4613df7cd46e93aacd05fd10b841e0917971c30d1595f6d42da3285f9c668b8fd37159789002e6ccc498d8b3c25f8893e47924115ebb23e6268d999bf725700",
-        "tokensStaked": "269597.62276000",
-        "delegatorIDCounter": "130",
-        "delegatorStaked": "1335065.26109112"
+        "tokensStaked": "302049.62276000",
+        "delegatorIDCounter": "138",
+        "delegatorStaked": "1335950.76620436"
     },
     "73": {
         "id": "82d73d03089e0bef245f563b9363a5e601eee2fdad73a62326b860f4475f3eca",
         "role": "4",
-        "networkingAddress": "verification-037.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-037.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "85d1f39aeef42da02588c428b71cd6a26723caf4a5ef99a64b0b59852787a5fb746a7fabb9af9d2a989e2ca692d47a642781332f2fc7068faa7fbc82bc5e7d54",
         "stakingKey": "a6ed610c22d44a044c6390f48430c7a79bb8340142adc54d1d877d96bc0833da02fb7b86a5237ae8a42c381dd12ea0a104e75a9a2821eb3532bd9ff154280f51623fc50327aa636da19accbd0614cb7289f78e8d4662441f1414cd4dd2cb4ea1",
         "tokensStaked": "900000.00000000",
@@ -746,8 +746,8 @@
         "networkingKey": "367b4deaef0a20221c471a0554a67f5a4d260ad702f9f3040650b210e5899dcdf9a9527a76314c396dfef91c970ed5674057427944c47574e9fd0d3b5f2453ea",
         "stakingKey": "a6663b2e69f7a9f22ceb43508d7de3f25500f829d62a6f2e058bb52aadb262f5eec1f3fa4ff63eab604905fb52f4cf1411bcefc4a2e8b5a33a93c73100d86c863c681ed195db8f0882a6aa7ab5adfd9344da0ba93a4cd4012736876c79f3773f",
         "tokensStaked": "141352.34668675",
-        "delegatorIDCounter": "45",
-        "delegatorStaked": "1143354.56737398"
+        "delegatorIDCounter": "47",
+        "delegatorStaked": "1144013.55717548"
     },
     "75": {
         "id": "79949f163dac6b72ab72c1d12b9677d71dd9367f7331d59425b485050c8712d9",
@@ -755,9 +755,9 @@
         "networkingAddress": "p2p.200638ae-6f31-43d6-9ae8-0203b19b8888.flow.bison.run:3569",
         "networkingKey": "9d42219c73cca08414209ad93143f091d928c100f7b31f19a8613688dfcba864a79d1ca0d86ad2ad35051d8c4a59a4621e1df4aa17130ccfb2fbd1a4fe77a288",
         "stakingKey": "a81544fc6829e99e6dddd854eb671d10fb60e200c7fa323aba6e0c66fd56fac3bed377c3fa20237db9e505582057ad73168e547404f4b6ba7a3055ab84863d904c1ea50fb3e37ffdce3010d87e82112bfbfb1f026eab94edb536712169ccdffc",
-        "tokensStaked": "235463.88564451",
-        "delegatorIDCounter": "1056",
-        "delegatorStaked": "10816813.61781881"
+        "tokensStaked": "243375.96750787",
+        "delegatorIDCounter": "1064",
+        "delegatorStaked": "10889023.76872855"
     },
     "76": {
         "id": "df5c2d5b9af9d0de5c4b70ce9adbdc7ae2af1a17485b4b8640f2c5b2c58d8954",
@@ -767,12 +767,12 @@
         "stakingKey": "91c081e9f35f1be47aa8c4ebab2a4ded21454eddd359ad8b366a21fc0dd65ffb93e978631ba8de44c70e1baafd20cd94144be31fa8c9962acbc865c9afa285f6a3290a675464736e37a5bfc18f28ec253c0ad25e936bd875b4173d4ee3a270f3",
         "tokensStaked": "135000.00000000",
         "delegatorIDCounter": "10",
-        "delegatorStaked": "1317497.25337490"
+        "delegatorStaked": "975578.98393337"
     },
     "77": {
         "id": "df9d9516eeaa8a0303990c581e59470c17b25e6e9e16071fe6ce524dbc56edf6",
         "role": "4",
-        "networkingAddress": "verification-022.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-022.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "e54f8a843e6cbe3e7ab78f5ee12e77cc88f1d6feb932b354164129bafa27cc0bb2d7b328b8ca72e582fddbd6abbf2445cd9072d5c3881b7aca80e9b82109a7f0",
         "stakingKey": "8261fd40b432f6601ad094edd3aada69c18afa92d19120f78d5a2eb496874cf2a5fb78690bb7a926dcda3cd8adfeabab01bf02d772215c2625af496acf51bd2491fa33aa7bf946b391e83046f7d1808ba4dfe0c7bfaca04aecccc7065a1e9bae",
         "tokensStaked": "900000.00000000",
@@ -785,9 +785,9 @@
         "networkingAddress": "flow.uken.com:3569",
         "networkingKey": "922f67e5879042d7a3f9a83329e8ff315709dd9a3b8361d83311da6f7a0db2679df7c6d2b3871a4a448225db90cc33f07dbfd496007f32c0eb289ba67b3825d5",
         "stakingKey": "992f41deef6be7ddb920204b1bbc687739ce0351d8b25316e45a4ee66c8302851b6012845b8c80fddba8c933033eca2318f6eaa4732131d05fac7ed8ceec30e57c3e66dc31fc7f3149d1025ae6b0abea5537bb75c15a119de6fbb64aed98fa02",
-        "tokensStaked": "168022.80942830",
+        "tokensStaked": "403393.67651716",
         "delegatorIDCounter": "6",
-        "delegatorStaked": "1420.95029871"
+        "delegatorStaked": "1427.64773560"
     },
     "79": {
         "id": "093132ae6b090b3cf3b14d5da282e8a9cc6e5158342a83354c4fd27d5263416e",
@@ -796,8 +796,8 @@
         "networkingKey": "cf242b438f1dc6c0295c09fa2285b19144166f5715870091a85486751799d028ac0e8fec9a8c493078a22e985f833fdcbba9c0b8397f4500324c64fc6948123d",
         "stakingKey": "855b9926142fb838809f59f4c7fe0a1bd91f12da9d6c894bf59f08cebd8236228247fefb594d77008dd9c1d413b16a06029d690e394a282fd9dd6309e530dee246e607e92da97e392d5e91e5621fcd822a168e10b814f529a178eb1efce6ddc2",
         "tokensStaked": "135000.00000000",
-        "delegatorIDCounter": "33",
-        "delegatorStaked": "1616262.15107389"
+        "delegatorIDCounter": "35",
+        "delegatorStaked": "1636456.02898563"
     },
     "80": {
         "id": "a3fac321587b4835966946cf7a13d5feaeb7ca91a84c85c2d2f861c2d80513ec",
@@ -805,14 +805,14 @@
         "networkingAddress": "p2p.fca8153b-3975-45ca-8847-c5cb7b4d43cb.flow.bison.run:3569",
         "networkingKey": "6bfab2b950a864e4c3e9820b9e9429814d8421f90e95c947cf2db3a24e64ccff25417c57df17c543e593f116bf6661770fff32568e2c89f1ccea5024dacb4596",
         "stakingKey": "8066f431c4abd6953eec3f85416365dd37a345ba609c2fbc9b4fbf964b8d3dd73e75598e343167354bbeed03d7550df001cdc486f3aedbe6dc9cb09d99530f5a27485f30401d09ce234c1e6662b04c6dac911b62804a8b25973874f509713f57",
-        "tokensStaked": "139856.30635000",
+        "tokensStaked": "135000.00000000",
         "delegatorIDCounter": "0",
         "delegatorStaked": "0.00000000"
     },
     "81": {
         "id": "502d7f96d3d1fd3d1732af9bebd4138c43118b955686d8be4d00b7fc4f616382",
         "role": "4",
-        "networkingAddress": "verification-030.mainnet18.nodes.onflow.org:3569",
+        "networkingAddress": "verification-030.mainnet19.nodes.onflow.org:3569",
         "networkingKey": "e8725f66c7a855a668db0f9adc3f34fe75be2872085f93eb26f043e30df4eda1406ef9924743a401c25fc74398133aab3157f4f28196cca7a12f6589056a8a31",
         "stakingKey": "88a0bcf687cf31f00bff0d4b5edee81932e31dd6ebe9829202cfca88e5d1906b5e63f478273b10b3301e1dd37ba3fc2917b715a41def8eca971e0366a8e6afc36e26193336ae6373983dc574af44b600f47608568099af564a182d1278314cbc",
         "tokensStaked": "900000.00000000",

@@ -1,5 +1,5 @@
 {
-    "Network": "emulator",
+    "Network": "mainnet",
     "AccessNodeType": "grpc",
     "AccessNode": {
         "emulator": "http://localhost:8080",
