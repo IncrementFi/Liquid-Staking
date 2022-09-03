@@ -17,7 +17,7 @@ import LiquidStakingConfig from "./LiquidStakingConfig.cdc"
 
 pub contract DelegatorManager {
 
-    /// All delegators managed by protocol
+    /// All delegators managed by liquid staking protocol
     /// {delegator uuid -> NodeDelegator}
     access(self) let allDelegators: @{UInt64: FlowIDTableStaking.NodeDelegator}
 
@@ -33,8 +33,8 @@ pub contract DelegatorManager {
 	// {nodeID -> {delegatorID -> uuid}}
 	access(self) let migratedDelegatorIDs: {String: {UInt32: UInt64}}
     
-    /// StFlow's quote epoch
-    /// When new flowchain epoch starts, the new quote epoch will only be started after all rewards 
+    /// The epoch of latest stFlow's quote
+    /// When a new flowchain epoch starts, the new quote epoch will only be started after all rewards 
     /// are collected and the price of stFlow is calculated correctly.
     pub var quoteEpochCounter: UInt64
 
@@ -47,16 +47,16 @@ pub contract DelegatorManager {
     /// Strategy bots will handle these unstaking requests to deleagtors
     pub var reservedRequestedToUnstakeAmount: UFix64
 
-    /// Reserved vault of protocol
-    access(self) let reservedProtocolVault: @FlowToken.Vault
-
     /// Collect and aggregate all rewards & unstaked tokens from all delegators at the beginning of each epoch
     access(self) let totalRewardedVault: @FlowToken.Vault
     access(self) let totalUnstakedVault: @FlowToken.Vault
 
     /// All epoch snapshot history
-    /// {epoch counter: snapshot}
+    /// {epoch idnex -> snapshot}
     pub var epochSnapshotHistory: {UInt64: EpochSnapshot}
+
+    /// Reserved vault of protocol
+    access(self) let reservedProtocolVault: @FlowToken.Vault
 
     /// Paths
     pub var adminPath: StoragePath
@@ -79,10 +79,10 @@ pub contract DelegatorManager {
     pub event SlashApprovedNode(nodeID: String)
     pub event RemoveApprovedNode(nodeID: String)
     
-    
-
     /// Reserved parameter fields: {ParamName: Value}
     access(self) let _reservedFields: {String: AnyStruct}
+
+    
 
     /// Epoch snapshot
     ///

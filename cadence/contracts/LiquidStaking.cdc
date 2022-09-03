@@ -16,6 +16,7 @@ import LiquidStakingConfig from "./LiquidStakingConfig.cdc"
 import DelegatorManager from "./DelegatorManager.cdc"
 
 pub contract LiquidStaking {
+
 	/// stFlowToken
 	access(self) var stFlowMinter: @stFlowToken.Minter
 	access(self) var stFlowBurner: @stFlowToken.Burner

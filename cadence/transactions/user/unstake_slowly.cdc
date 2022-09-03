@@ -10,7 +10,7 @@ transaction(stFlowAmount: UFix64) {
         
         let voucher <- LiquidStaking.unstakeSlowly(stFlowVault: <-inVault)
         log("--> unstake slowly stFlow ".concat(stFlowAmount.toString()))
-        log("--> could get Flow in the future: ".concat(voucher.flowAmount.toString()))
+        log("--> could get Flow in the future: ".concat(voucher.lockedFlowAmount.toString()))
 
         var voucherCollectionRef = userAccount.borrow<&LiquidStaking.UnstakingVoucherCollection>(from: LiquidStaking.UnstakingVoucherCollectionPath)
         if voucherCollectionRef == nil {
