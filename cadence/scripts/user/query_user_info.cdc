@@ -1,6 +1,7 @@
 import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
 import stFlowToken from "../../contracts/stFlowToken.cdc"
 import LiquidStaking from "../../contracts/LiquidStaking.cdc"
+import FlowStakingCollection from "../../contracts/flow/FlowStakingCollection.cdc"
 
 pub fun main(userAddr: Address): {String: AnyStruct} {
     
@@ -12,10 +13,26 @@ pub fun main(userAddr: Address): {String: AnyStruct} {
     if voucherCollectionRef != nil {
         voucherInfos = voucherCollectionRef!.getVoucherInfos()
     }
+
+    var lockedTokensUsed = 0.0
+    var unlockedTokensUsed = 0.0
+    var migratedInfos: [AnyStruct]? = nil
+    let stakingCollectionRef = getAccount(userAddr).getCapability<&{FlowStakingCollection.StakingCollectionPublic}>(FlowStakingCollection.StakingCollectionPublicPath).borrow()
+    if stakingCollectionRef != nil {
+        migratedInfos = stakingCollectionRef!.getAllDelegatorInfo()
+        lockedTokensUsed = stakingCollectionRef!.lockedTokensUsed
+        unlockedTokensUsed = stakingCollectionRef!.unlockedTokensUsed
+    }
+
     //let usdcBalance = getAccount(userAddr).getCapability<&{FungibleToken.Balance}>(/public/USDCVaultBalance).borrow()!.balance
     return {
         "Flow": flowBalance,
         "stFlow": stFlowBalance,
-        "vouchers": voucherInfos
+        "UnstakingVouchers": voucherInfos,
+        "MigratedInfos": {
+            "lockedTokensUsed": lockedTokensUsed,
+            "unlockedTokensUsed": unlockedTokensUsed,
+            "migratedInfos": migratedInfos
+        }
     }
 }

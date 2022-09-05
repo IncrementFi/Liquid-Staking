@@ -26,7 +26,7 @@ pub contract LiquidStaking {
 	pub var UnstakingVoucherCollectionPublicPath: PublicPath
 
 	/// Events
-	pub event Stake(flowAmountIn: UFix64, stFlowAmountOut: UFix64, epoch: UInt32)
+	pub event Stake(flowAmountIn: UFix64, stFlowAmountOut: UFix64, epoch: UInt64)
 	pub event UnstakeSlowly(stFlowAmountIn: UFix64, lockedFlowAmount: UFix64, epoch: UInt64, unlockEpoch: UInt64, voucherUUID: UInt64)
 	pub event UnstakeQuickly(stFlowAmountIn: UFix64, flowAmountOut: UFix64, epoch: UInt64)
 	pub event MigrateDelegator(uuid: UInt64, migratedFlowIn: UFix64, stFlowOut: UFix64)
@@ -190,7 +190,7 @@ pub contract LiquidStaking {
 			// Flowchain staking state check
 			FlowIDTableStaking.stakingEnabled(): "System staking disabled"
 			// Pause check
-			LiquidStakingConfig.isMigratingPaused: "Migrating is paused"
+			LiquidStakingConfig.isMigratingPaused == false: "Migrating is paused"
 			// Protocol staking state check
 			FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Please wait the protocol to enter the new staking epoch"
 		}

@@ -4,11 +4,24 @@ import FlowEpoch from "../../contracts/flow/FlowEpoch.cdc"
 
 import stFlowToken from "../../contracts/stFlowToken.cdc"
 import LiquidStaking from "../../contracts/LiquidStaking.cdc"
+import LiquidStakingConfig from "../../contracts/LiquidStakingConfig.cdc"
 import DelegatorManager from "../../contracts/DelegatorManager.cdc"
 
 pub fun main(userAddr: Address?): {String: AnyStruct} {
     let currentSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
+    let currentBlockView = getCurrentBlock().view
+    let currentEpochMetadata = FlowEpoch.getEpochMetadata(DelegatorManager.quoteEpochCounter)!
+    let showEpochMetadata = FlowEpoch.getEpochMetadata(FlowEpoch.currentEpochCounter)!
+
     
+    var unlockEpoch = FlowEpoch.currentEpochCounter + 2
+    if FlowIDTableStaking.stakingEnabled() {
+        if currentBlockView + LiquidStakingConfig.windowSizeBeforeStakingEnd >= currentEpochMetadata.stakingEndView {
+			unlockEpoch = FlowEpoch.currentEpochCounter + 3
+		}
+    } else {
+        unlockEpoch = FlowEpoch.currentEpochCounter + 3
+    }
 
     var voucherInfos: [AnyStruct]? = nil
     if userAddr != nil {
@@ -31,11 +44,43 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
     }
     //let usdcBalance = getAccount(userAddr).getCapability<&{FungibleToken.Balance}>(/public/USDCVaultBalance).borrow()!.balance
     return {
-        "CurrentEpoch": FlowEpoch.currentEpochCounter,
-        "stFlowFlow": 1.0015, //currentSnapshot.quoteStFlowFlow,
-        "FlowStFlow": 0.9985, //currentSnapshot.quoteFlowStFlow,
-        "FlowUSD": 2.4,
+        "CurrentEpoch": DelegatorManager.quoteEpochCounter,
+        "CurrentUnstakeEpoch": unlockEpoch,
 
-        "UnstakingVouchers": voucherInfos
+        "stFlowFlow": currentSnapshot.quoteStFlowFlow,
+        "FlowStFlow": currentSnapshot.quoteFlowStFlow,
+        "FlowUSD": 1.85,
+
+        "TotalStaked": DelegatorManager.getTotalValidStakingAmount(),
+        "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() * FlowIDTableStaking.getRewardCutPercentage(),
+
+        "EpochMetadata": {
+            "StartView": showEpochMetadata.startView,
+            "StartTimestamp": currentSnapshot.quoteEpochStartTimestamp,
+            "EndView": showEpochMetadata.endView,
+            "CurrentView": currentBlockView,
+            "CurrentTimestamp": getCurrentBlock().timestamp,
+            "StakingEndView": showEpochMetadata.stakingEndView
+        },
+
+        "User": {
+            "UnstakingVouchers": voucherInfos,
+            "MigratedInfos": {
+                "lockedTokensUsed": 90.0,
+                "unlockedTokensUsed": 83.0,
+                "migratedInfos": [
+                    {
+                        "nodeID": "121132",
+                        "id": 123,
+                        "tokensCommitted": 10.0,
+                        "tokensStaked": 10.0,
+                        "tokensUnstaking": 10.0,
+                        "tokensRewarded": 10.0,
+                        "tokensUnstaked": 10.0,
+                        "tokensRequestedToUnstake": 10.0
+                    }
+                ]
+            }
+        }
     }
 }
