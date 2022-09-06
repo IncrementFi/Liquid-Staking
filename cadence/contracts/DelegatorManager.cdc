@@ -68,6 +68,7 @@ pub contract DelegatorManager {
     pub event RewardPermanentLoss(loss: UFix64, epoch: UInt64)
     pub event DepositProtocolReservedVault(amount: UFix64, purpose: String)
     pub event RestakeSlashedTokens(amount: UFix64, type: String, epoch: UInt64)
+    pub event RedelegateTokens(amount: UFix64, epoch: UInt64)
     pub event CompoundReward(rewardAmount: UFix64, epoch: UInt64)
     pub event CollectDelegators(startIndex: Int, endIndex: Int, pendingDelegatorCount: Int)
     pub event BotTransferCommittedTokens(from: String, to: String, amount: UFix64)
@@ -78,6 +79,7 @@ pub contract DelegatorManager {
     pub event SetReservedNode(from: String, to: String)
     pub event SlashApprovedNode(nodeID: String)
     pub event RemoveApprovedNode(nodeID: String)
+    pub event Redelegate(nodeID: String, delegatorID: UInt32, unstakeAmount: UFix64)
     
     /// Reserved parameter fields: {ParamName: Value}
     access(self) let _reservedFields: {String: AnyStruct}
@@ -120,6 +122,12 @@ pub contract DelegatorManager {
         /// Staked tokens on slashed nodes will be forcely moved to unstaking vault
         /// Re-commit when unstaking complete
         pub var slashedStakedTokens: UFix64
+
+        /// Tokens that requested to unstake for redelegation in thie epoch
+        pub var redelegatedTokensToRequestUnstake: UFix64
+        /// Tokens in unstaking vault for redelegation
+        pub var redelegatedTokensUnderUnstaking: UFix64
+
 
         /// Start time of new quote epoch
         pub var quoteEpochStartTimestamp: UFix64
@@ -166,13 +174,8 @@ pub contract DelegatorManager {
             self.receivedReward = DelegatorManager.totalRewardedVault.balance
 
             // Estimate and record future reward
-            self.snapshotFutureReward()
+            self.estimateFutureReward()
             
-            // Snapshot this week's stFlow price
-            let quotes = self.stFlowQuote()
-            self.quoteStFlowFlow = quotes[0]
-            self.quoteFlowStFlow = quotes[1]
-
             // Epoch starttime record
             let currentBlock = getCurrentBlock()
             self.quoteEpochStartTimestamp = currentBlock.timestamp
@@ -188,7 +191,7 @@ pub contract DelegatorManager {
 
         /// Estimate reward that will be received next epoch
         ///
-        access(self) fun snapshotFutureReward() {
+        access(self) fun estimateFutureReward() {
 
             let lastEpochCounter = DelegatorManager.quoteEpochCounter
             // Reward estimated on last epoch
@@ -217,32 +220,6 @@ pub contract DelegatorManager {
             emit ReceiveStakingReward(realReceivedAmount: self.receivedReward, lastEstimatedAmount: lastFutureAmount, epoch: FlowEpoch.currentEpochCounter)
         }
         
-        /// Calculate the stFlow price
-        ///
-        ///                      [totalCommitted] + [totalStaked] + [futureReward]
-        /// stFlow_Flow price = ---------------------------------------------------
-        ///                                    [stFlow totalSupply]
-        ///
-        pub fun stFlowQuote(): [UFix64; 2] {
-
-            let totalCommitted = self.allDelegatorCommitted + DelegatorManager.totalRewardedVault.balance
-
-            let totalStaked = self.allDelegatorStaked - DelegatorManager.reservedRequestedToUnstakeAmount - self.allDelegatorRequestedToUnstake
-            
-            let futureReward = self.futureReward
-
-            let flowSupply = totalCommitted + totalStaked + futureReward
-            let stFlowSupply = stFlowToken.totalSupply
-
-            if flowSupply == 0.0 || stFlowSupply == 0.0 {
-                return [1.0, 1.0]
-            }
-            let stFlow_Flow = flowSupply / stFlowSupply
-            let Flow_stFlow = stFlowSupply / flowSupply
-
-            return [stFlow_Flow, Flow_stFlow]
-        }
-
         /// Delegator count that has been collected
         pub fun getCollectedDelegatorCount(): Int {
             let nodeIDs = self.delegatorInfoDict.keys
@@ -262,13 +239,29 @@ pub contract DelegatorManager {
         }
 
         ///
-        pub fun addSlashedCommittedTokens(amount: UFix64) {
+        access(contract) fun addSlashedCommittedTokens(amount: UFix64) {
             self.slashedCommittedTokens = self.slashedCommittedTokens + amount
         }
 
         ///
-        pub fun addSlashedStakedTokens(amount: UFix64) {
+        access(contract) fun addSlashedStakedTokens(amount: UFix64) {
             self.slashedStakedTokens = self.slashedStakedTokens + amount
+        }
+
+        ///
+        access(contract) fun addRedelegatedTokensToRequestUnstake(amount: UFix64) {
+            self.redelegatedTokensToRequestUnstake = self.redelegatedTokensToRequestUnstake + amount
+        }
+
+        ///
+        access(contract) fun setRedelegatedTokensUnderUnstaking(amount: UFix64) {
+            self.redelegatedTokensUnderUnstaking = self.redelegatedTokensUnderUnstaking + amount
+        }
+
+        ///
+        access(contract) fun setStflowPrice(stFlowToFlow: UFix64, flowToStFlow: UFix64) {
+            self.quoteStFlowFlow = stFlowToFlow
+            self.quoteFlowStFlow = flowToStFlow
         }
 
         init(epochCounter: UInt64) {
@@ -288,6 +281,9 @@ pub contract DelegatorManager {
 
             self.slashedCommittedTokens = 0.0
             self.slashedStakedTokens = 0.0
+
+            self.redelegatedTokensToRequestUnstake = 0.0
+            self.redelegatedTokensUnderUnstaking = 0.0
 
             self.quoteEpochStartTimestamp = 0.0
             self.quoteEpochStartBlockHeight = 0
@@ -314,10 +310,58 @@ pub contract DelegatorManager {
         // Re-commit slashed tokens
         self.restakeSlashedTokens()
 
+        // Re-commit redelegated tokens
+        self.redelegateTokens()
+
+        // Calculate stFlow price for this epoch
+        self.stFlowQuote()
+
         // Finally, start the new quote epoch
         self.quoteEpochCounter = FlowEpoch.currentEpochCounter
 
         emit NewQuoteEpoch(epoch: self.quoteEpochCounter)
+    }
+
+    /// Calculate the stFlow price
+    ///
+    ///                      [totalCommitted] + [totalStaked] + [futureReward]
+    /// stFlow_Flow price = ---------------------------------------------------
+    ///                                    [stFlow totalSupply]
+    ///
+    access(self) fun stFlowQuote() {
+        pre {
+            FlowEpoch.currentEpochCounter > self.quoteEpochCounter: "stFlow quote can only be called before new quote epoch start"
+        }
+
+        let newEpochSnapshot: &EpochSnapshot = &(self.epochSnapshotHistory[FlowEpoch.currentEpochCounter]!) as &EpochSnapshot
+        let lastEpochSnapshot: &EpochSnapshot = &(self.epochSnapshotHistory[self.quoteEpochCounter]!) as &EpochSnapshot
+
+        let totalCommitted = newEpochSnapshot.allDelegatorCommitted
+                                        + DelegatorManager.totalRewardedVault.balance
+
+        let totalStaked = newEpochSnapshot.allDelegatorStaked
+                                    - DelegatorManager.reservedRequestedToUnstakeAmount
+                                    - newEpochSnapshot.allDelegatorRequestedToUnstake
+                                    + newEpochSnapshot.slashedStakedTokens
+                                    + newEpochSnapshot.redelegatedTokensToRequestUnstake
+                                    + newEpochSnapshot.redelegatedTokensUnderUnstaking
+        
+        let futureReward = newEpochSnapshot.futureReward
+
+        let flowSupply = totalCommitted + totalStaked + futureReward
+        let stFlowSupply = stFlowToken.totalSupply
+
+        var stFlow_Flow = 0.0
+        var Flow_stFlow = 0.0
+        if flowSupply == 0.0 || stFlowSupply == 0.0 {
+            stFlow_Flow = 1.0
+            Flow_stFlow = 1.0
+        } else {
+            stFlow_Flow = flowSupply / stFlowSupply
+            Flow_stFlow = stFlowSupply / flowSupply
+        }
+        
+        newEpochSnapshot.setStflowPrice(stFlowToFlow: stFlow_Flow, flowToStFlow: Flow_stFlow)
     }
     
     /// Deposit flowToken to the reserved delegator
@@ -369,7 +413,8 @@ pub contract DelegatorManager {
             <=
             self.borrowCurrentEpochSnapshot().allDelegatorStaked: "Not enough staked tokens to request withdraw"
         }
-        // Into reserve
+        
+        // Add unstake request reserve
         self.reservedRequestedToUnstakeAmount = self.reservedRequestedToUnstakeAmount + amount
     }
 
@@ -409,7 +454,7 @@ pub contract DelegatorManager {
     ///
     access(self) fun restakeSlashedTokens() {
         pre {
-            FlowEpoch.currentEpochCounter > self.quoteEpochCounter: "recommit slashed tokens cannot noly be called before new quote epoch start"
+            FlowEpoch.currentEpochCounter > self.quoteEpochCounter: "recommit slashed tokens can only be called before new quote epoch start"
         }
 
         let newEpochSnapshot: &EpochSnapshot = &(self.epochSnapshotHistory[FlowEpoch.currentEpochCounter]!) as &EpochSnapshot
@@ -419,6 +464,7 @@ pub contract DelegatorManager {
         if newEpochSnapshot.slashedCommittedTokens > 0.0 {
             let slashedCommittedTokens <- self.totalUnstakedVault.withdraw(amount: newEpochSnapshot.slashedCommittedTokens)
             self.depositToCommitted(flowVault: <-(slashedCommittedTokens as! @FlowToken.Vault))
+            
             emit RestakeSlashedTokens(amount: newEpochSnapshot.slashedCommittedTokens, type: "committed", epoch: FlowEpoch.currentEpochCounter)
         }
 
@@ -426,7 +472,31 @@ pub contract DelegatorManager {
         if lastEpochSnapshot.slashedStakedTokens > 0.0 {
             let slashedStakedTokens <- self.totalUnstakedVault.withdraw(amount: lastEpochSnapshot.slashedStakedTokens)
             self.depositToCommitted(flowVault: <-(slashedStakedTokens as! @FlowToken.Vault))
+            
             emit RestakeSlashedTokens(amount: lastEpochSnapshot.slashedStakedTokens, type: "staked", epoch: FlowEpoch.currentEpochCounter)
+        }
+    }
+
+    ///
+    access(self) fun redelegateTokens() {
+        pre {
+            FlowEpoch.currentEpochCounter > self.quoteEpochCounter: "redelegate tokens can only be called before new quote epoch start"
+        }
+
+        let newEpochSnapshot: &EpochSnapshot = &(self.epochSnapshotHistory[FlowEpoch.currentEpochCounter]!) as &EpochSnapshot
+        let lastEpochSnapshot: &EpochSnapshot = &(self.epochSnapshotHistory[self.quoteEpochCounter]!) as &EpochSnapshot
+
+        // request unstake tokens -> unstaking tokens
+        if lastEpochSnapshot.redelegatedTokensToRequestUnstake > 0.0 {
+            newEpochSnapshot.setRedelegatedTokensUnderUnstaking(amount: lastEpochSnapshot.redelegatedTokensToRequestUnstake)
+        }
+
+        // unstaking tokens -> unstaked -> recommit
+        if lastEpochSnapshot.redelegatedTokensUnderUnstaking > 0.0 {
+            let redelegatedVault <- self.totalUnstakedVault.withdraw(amount: lastEpochSnapshot.redelegatedTokensUnderUnstaking)
+            self.depositToCommitted(flowVault: <-(redelegatedVault as! @FlowToken.Vault))
+
+            emit RedelegateTokens(amount: lastEpochSnapshot.redelegatedTokensUnderUnstaking, epoch: FlowEpoch.currentEpochCounter)
         }
     }
 
@@ -658,9 +728,25 @@ pub contract DelegatorManager {
         return self.borrowEpochSnapshot(at: FlowEpoch.currentEpochCounter)
     }
 
+    ///
+    pub fun getDelegatorUUIDByID(nodeID: String, delegatorID: UInt32): UInt64? {
+        if self.migratedDelegatorIDs.containsKey(nodeID) {
+            if self.migratedDelegatorIDs[nodeID]!.containsKey(delegatorID) {
+                return self.migratedDelegatorIDs[nodeID]![delegatorID]
+            }
+        }
+        if let delegator = self.borrowApprovedDelegator(nodeID: nodeID) {
+            if delegator.id == delegatorID {
+                return self.approvedDelegatorIDs[nodeID]!
+            }
+        }
+        
+        return nil
+    }
+
     /// 
     pub fun isNodeDelegated(_ nodeID: String): Bool {
-		return self.approvedDelegatorIDs.keys.contains(nodeID)
+		return self.approvedDelegatorIDs.containsKey(nodeID)
 	}
 
     /// Staking Node ID Whitelist
@@ -868,15 +954,32 @@ pub contract DelegatorManager {
         }
         
         /// Create bot
-        /// TODO
+        ///
         pub fun createBot(): @Bot {
             return <- create Bot()
         }
 
-        /// Register new delegator mannually
+        /// Redelegate
         ///
-        pub fun registerNewDelegator(nodeID: String) {
-            DelegatorManager.registerNewDelegator(nodeID)
+        pub fun redelegate(nodeID: String, delegatorID: UInt32, unstakeAmount: UFix64) {
+            let uuid = DelegatorManager.getDelegatorUUIDByID(nodeID: nodeID, delegatorID: delegatorID)!
+            let delegator = DelegatorManager.borrowDelegator(uuid: uuid)!
+            let delegatorInfo = DelegatorManager.getDelegatorInfoByUUID(delegatorUUID: uuid)
+
+            // redelegate all committed tokens directly
+            if delegatorInfo.tokensCommitted > 0.0 {
+                delegator.requestUnstaking(amount: delegatorInfo.tokensCommitted)
+                let committedVault <- delegator.withdrawUnstakedTokens(amount: delegatorInfo.tokensCommitted)
+                DelegatorManager.depositToCommitted(flowVault: <-(committedVault as! @FlowToken.Vault))
+            }
+
+            // request unstake
+            delegator.requestUnstaking(amount: unstakeAmount)
+            
+            // 
+            DelegatorManager.borrowCurrentEpochSnapshot().upsertDelegatorInfo(nodeID: delegator.nodeID, delegatorID: delegator.id)
+            
+            emit Redelegate(nodeID: nodeID, delegatorID: delegatorID, unstakeAmount: unstakeAmount)
         }
 
         /// Reserved vault control
@@ -890,6 +993,13 @@ pub contract DelegatorManager {
         pub fun addReward(rewardedVault: @FlowToken.Vault) {
             DelegatorManager.totalRewardedVault.deposit(from: <-rewardedVault)
         }
+
+        /// Register new delegator mannually
+        ///
+        pub fun registerNewDelegator(nodeID: String) {
+            DelegatorManager.registerNewDelegator(nodeID)
+        }
+
 	}
 
 
