@@ -407,15 +407,35 @@ pub contract DelegatorManager {
     /// Called by unstakeSlowly()
     ///
     access(account) fun requestWithdrawFromStaked(amount: UFix64) {
-        pre {
-            // If there are enough staked tokens to unstake
-            amount + self.reservedRequestedToUnstakeAmount + self.borrowCurrentEpochSnapshot().allDelegatorRequestedToUnstake
-            <=
-            self.borrowCurrentEpochSnapshot().allDelegatorStaked: "Not enough staked tokens to request withdraw"
-        }
         
-        // Add unstake request reserve
-        self.reservedRequestedToUnstakeAmount = self.reservedRequestedToUnstakeAmount + amount
+        let currentEpochSnapshot = self.borrowCurrentEpochSnapshot()
+        let leftStakedTokens = currentEpochSnapshot.allDelegatorStaked
+                                        -
+                                        (self.reservedRequestedToUnstakeAmount + currentEpochSnapshot.allDelegatorRequestedToUnstake)
+        
+        // all from staked tokens
+        if leftStakedTokens >= amount {
+            self.reservedRequestedToUnstakeAmount = self.reservedRequestedToUnstakeAmount + amount
+            log("unstake")
+            log(amount.toString())
+        }
+        // the rest from committed tokens
+        else {
+            //
+            self.reservedRequestedToUnstakeAmount = self.reservedRequestedToUnstakeAmount + leftStakedTokens
+
+            let reservedDelegator = self.borrowApprovedDelegator(nodeID: self.reservedNodeIDToStake)!
+            let reservedDelegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: reservedDelegator.nodeID, delegatorID: reservedDelegator.id)
+        
+            assert(reservedDelegatroInfo.tokensCommitted >= amount - leftStakedTokens, message: "Not enough tokens to request unstake")
+            log("unstake from commit")
+            log((amount - leftStakedTokens).toString())
+            // committed vault -> unstaked vault
+            reservedDelegator.requestUnstaking(amount: amount - leftStakedTokens)
+
+            // Update snapshot
+            self.borrowCurrentEpochSnapshot().upsertDelegatorInfo(nodeID: reservedDelegator.nodeID, delegatorID: reservedDelegator.id)
+        }
     }
 
     /// Withdraw tokens from unstaked vault
@@ -1029,3 +1049,4 @@ pub contract DelegatorManager {
         self.account.save(<-create Admin(), to: self.adminPath)
     }
 }
+ 
