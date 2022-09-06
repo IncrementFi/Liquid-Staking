@@ -54,3 +54,4 @@ pub fun main(role: UInt8): AnyStruct {
     }
     return [nodeInfos, totalNodeStaked]
 }
+ 

@@ -238,9 +238,19 @@ pub contract LiquidStaking {
 			self.vouchers.append(<-voucher)
 		}
 
-		pub fun withdraw(index: UInt32): @UnstakingVoucher {
-			let voucher <- self.vouchers.remove(at: index)
-			return <-voucher
+		pub fun withdraw(uuid: UInt64): @UnstakingVoucher {
+			var findIndex: Int? = nil
+			var index = 0
+			while index < self.vouchers.length {
+				if self.vouchers[index].uuid == uuid {
+					findIndex = index
+					break
+				}
+				index = index + 1
+			}
+
+			assert(findIndex != nil, message: "Cannot find voucher with uuid ".concat(uuid.toString()))
+			return <-self.vouchers.remove(at: findIndex!)
 		}
 
 		pub fun getVoucherInfos(): [AnyStruct] {
