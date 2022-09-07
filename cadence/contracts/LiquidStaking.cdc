@@ -17,10 +17,6 @@ import DelegatorManager from "./DelegatorManager.cdc"
 
 pub contract LiquidStaking {
 
-    /// stFlowToken
-    access(self) var stFlowMinter: @stFlowToken.Minter
-    access(self) var stFlowBurner: @stFlowToken.Burner
-
     /// Paths
     pub var UnstakingVoucherCollectionPath: StoragePath
     pub var UnstakingVoucherCollectionPublicPath: PublicPath
@@ -78,7 +74,7 @@ pub contract LiquidStaking {
         DelegatorManager.depositToCommitted(flowVault: <-flowVault)
 
         // Mint stFlow
-        let stFlowVault <- self.stFlowMinter.mintTokens(amount: stFlowAmountToMint)
+        let stFlowVault <- stFlowToken.mintTokens(amount: stFlowAmountToMint)
 
         emit Stake(flowAmountIn: flowAmountToStake, stFlowAmountOut: stFlowAmountToMint, epoch: FlowEpoch.currentEpochCounter)
 
@@ -98,7 +94,7 @@ pub contract LiquidStaking {
         let flowAmountToUnstake = self.calcFlowFromStFlow(stFlowAmount: stFlowAmountToBurn)
 
         // Burn stFlow
-        self.stFlowBurner.burnTokens(from: <-stFlowVault)
+        stFlowToken.burnTokens(from: <-stFlowVault)
 
         //
         DelegatorManager.requestWithdrawFromStaked(amount: flowAmountToUnstake)
@@ -152,7 +148,7 @@ pub contract LiquidStaking {
         DelegatorManager.depositProtocolReservedVault(flowVault: <-feeVault, purpose: "unstake fee")
         
         // Burn stFlow
-        self.stFlowBurner.burnTokens(from: <-stFlowVault)
+        stFlowToken.burnTokens(from: <-stFlowVault)
 
         emit UnstakeQuickly(stFlowAmountIn: stFlowAmountToBurn, flowAmountOut: flowVault.balance, epoch: FlowEpoch.currentEpochCounter)
         
@@ -214,7 +210,7 @@ pub contract LiquidStaking {
         DelegatorManager.migrateDelegator(delegator: <-delegator)
 
         // Mint stFlow
-        let stFlowVault <- self.stFlowMinter.mintTokens(amount: stFlowAmountToMint)
+        let stFlowVault <- stFlowToken.mintTokens(amount: stFlowAmountToMint)
         return <-stFlowVault
     }
 
@@ -299,11 +295,6 @@ pub contract LiquidStaking {
         self.UnstakingVoucherCollectionPath = /storage/unstaking_voucher_collection
         self.UnstakingVoucherCollectionPublicPath = /public/unstaking_voucher_collection
         self._reservedFields = {}
-
-        // Create stFlow minter & burner
-        let stFlowAdmin = self.account.borrow<&stFlowToken.Administrator>(from: /storage/stFlowTokenAdmin)!
-        self.stFlowMinter <- stFlowAdmin.createNewMinter(allowedAmount: UFix64.max)
-        self.stFlowBurner <- stFlowAdmin.createNewBurner()
     }
 }
  

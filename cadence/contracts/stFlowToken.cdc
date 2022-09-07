@@ -101,76 +101,35 @@ pub contract stFlowToken: FungibleToken {
     }
 
     pub resource Administrator {
-        // createNewMinter
-        //
-        // Function that creates and returns a new minter resource
-        //
-        pub fun createNewMinter(allowedAmount: UFix64): @Minter {
-            emit MinterCreated(allowedAmount: allowedAmount)
-            return <-create Minter(allowedAmount: allowedAmount)
-        }
-
-        // createNewBurner
-        //
-        // Function that creates and returns a new burner resource
-        //
-        pub fun createNewBurner(): @Burner {
-            emit BurnerCreated()
-            return <-create Burner()
-        }
     }
 
-    // Minter
+    // Mint tokens
     //
-    // Resource object that token admin accounts can hold to mint new tokens.
+    // stFlow token will be mint only when the user stake flow tokens into liquid staking
     //
-    pub resource Minter {
-
-        // the amount of tokens that the minter is allowed to mint
-        pub var allowedAmount: UFix64
-
-        // mintTokens
-        //
-        // Function that mints new tokens, adds them to the total supply,
-        // and returns them to the calling context.
-        //
-        pub fun mintTokens(amount: UFix64): @stFlowToken.Vault {
-            pre {
-                amount > 0.0: "Amount minted must be greater than zero"
-                amount <= self.allowedAmount: "Amount minted must be less than the allowed amount"
-            }
-            stFlowToken.totalSupply = stFlowToken.totalSupply + amount
-            if (self.allowedAmount != UFix64.max) {
-                self.allowedAmount = self.allowedAmount - amount
-            }
-            emit TokensMinted(amount: amount)
-            return <-create Vault(balance: amount)
+    access(account) fun mintTokens(amount: UFix64): @stFlowToken.Vault {
+        pre {
+            amount > 0.0: "Amount minted must be greater than zero"
         }
 
-        init(allowedAmount: UFix64) {
-            self.allowedAmount = allowedAmount
-        }
+        stFlowToken.totalSupply = stFlowToken.totalSupply + amount
+
+        emit TokensMinted(amount: amount)
+
+        return <-create Vault(balance: amount)
     }
     
-    // Burner
+    // Burn tokens
     //
-    // Resource object that token admin accounts can hold to burn tokens.
+    // stFlow token will be burned when the user unstake flow tokens from liquid staking
+    // Note: the burned tokens are automatically subtracted from the 
+    // total supply in the Vault destructor.    
     //
-    pub resource Burner {
-
-        // burnTokens
-        //
-        // Function that destroys a Vault instance, effectively burning the tokens.
-        //
-        // Note: the burned tokens are automatically subtracted from the 
-        // total supply in the Vault destructor.
-        //
-        pub fun burnTokens(from: @FungibleToken.Vault) {
-            let vault <- from as! @stFlowToken.Vault
-            let amount = vault.balance
-            destroy vault
-            emit TokensBurned(amount: amount)
-        }
+    access(account) fun burnTokens(from: @FungibleToken.Vault) {
+        let vault <- from as! @stFlowToken.Vault
+        let amount = vault.balance
+        destroy vault
+        emit TokensBurned(amount: amount)
     }
 
     init() {
