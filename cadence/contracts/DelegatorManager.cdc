@@ -27,11 +27,11 @@ pub contract DelegatorManager {
     
     /// Delegator IDs for each node ID
     /// {nodeID -> delegator uuid}
-	access(self) let approvedDelegatorIDs: {String: UInt64}
+    access(self) let approvedDelegatorIDs: {String: UInt64}
 
     /// IDs of migrated delegators on each node ID
-	// {nodeID -> {delegatorID -> uuid}}
-	access(self) let migratedDelegatorIDs: {String: {UInt32: UInt64}}
+    // {nodeID -> {delegatorID -> uuid}}
+    access(self) let migratedDelegatorIDs: {String: {UInt32: UInt64}}
     
     /// The epoch of latest stFlow's quote
     /// When a new flowchain epoch starts, the new quote epoch will only be started after all rewards 
@@ -63,7 +63,7 @@ pub contract DelegatorManager {
 
     // Events
     pub event NewQuoteEpoch(epoch: UInt64)
-	pub event RegisterNewDelegator(nodeID: String, delegatorID: UInt32)
+    pub event RegisterNewDelegator(nodeID: String, delegatorID: UInt32)
     pub event ReceiveStakingReward(realReceivedAmount: UFix64, lastEstimatedAmount: UFix64, epoch: UInt64)
     pub event RewardPermanentLoss(loss: UFix64, epoch: UInt64)
     pub event DepositProtocolReservedVault(amount: UFix64, purpose: String)
@@ -639,13 +639,13 @@ pub contract DelegatorManager {
     
     ///
     access(self) fun borrowDelegator(uuid: UInt64): &FlowIDTableStaking.NodeDelegator? {
-		if self.allDelegators[uuid] != nil {
-			let delegatorRef = (&self.allDelegators[uuid] as &FlowIDTableStaking.NodeDelegator?)!
-			return delegatorRef
-		} else {
-			return nil
-		}
-	}
+        if self.allDelegators[uuid] != nil {
+            let delegatorRef = (&self.allDelegators[uuid] as &FlowIDTableStaking.NodeDelegator?)!
+            return delegatorRef
+        } else {
+            return nil
+        }
+    }
 
     ///
     access(self) fun removeDelegator(uuid: UInt64) {
@@ -664,20 +664,20 @@ pub contract DelegatorManager {
 
     /// Register delegator on new staking node
     ///
-	access(self) fun registerNewDelegator(_ nodeID: String) {
-		pre {
-			self.isNodeDelegated(nodeID) == false: "Cannot register a delegator for a node that is already being delegated to"
+    access(self) fun registerNewDelegator(_ nodeID: String) {
+        pre {
+            self.isNodeDelegated(nodeID) == false: "Cannot register a delegator for a node that is already being delegated to"
             self.approvedNodeIDList.containsKey(nodeID): "Cannot register a delegator that out of approved list"
             FlowIDTableStaking.getStakedNodeIDs().contains(nodeID): "Cannot stake to an invalid staked node: ".concat(nodeID)
-		}
+        }
 
-		let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
-		emit RegisterNewDelegator(nodeID: nodeDelegator.nodeID, delegatorID: nodeDelegator.id)
+        let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
+        emit RegisterNewDelegator(nodeID: nodeDelegator.nodeID, delegatorID: nodeDelegator.id)
 
         let uuid = nodeDelegator.uuid
         self.approvedDelegatorIDs[nodeDelegator.nodeID] = uuid
-		self.allDelegators[uuid] <-! nodeDelegator
-	}
+        self.allDelegators[uuid] <-! nodeDelegator
+    }
 
     ///
     access(self) fun createorborrowApprovedDelegator(nodeID: String): &FlowIDTableStaking.NodeDelegator {
@@ -759,8 +759,8 @@ pub contract DelegatorManager {
 
     /// 
     pub fun isNodeDelegated(_ nodeID: String): Bool {
-		return self.approvedDelegatorIDs.containsKey(nodeID)
-	}
+        return self.approvedDelegatorIDs.containsKey(nodeID)
+    }
 
     /// Staking Node ID Whitelist
     ///
@@ -1018,7 +1018,7 @@ pub contract DelegatorManager {
             DelegatorManager.registerNewDelegator(nodeID)
         }
 
-	}
+    }
 
 
     init() {

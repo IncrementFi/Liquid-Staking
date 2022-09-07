@@ -17,8 +17,8 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
     var unlockEpoch = FlowEpoch.currentEpochCounter + 2
     if FlowIDTableStaking.stakingEnabled() {
         if currentBlockView + LiquidStakingConfig.windowSizeBeforeStakingEnd >= currentEpochMetadata.stakingEndView {
-			unlockEpoch = FlowEpoch.currentEpochCounter + 3
-		}
+            unlockEpoch = FlowEpoch.currentEpochCounter + 3
+        }
     } else {
         unlockEpoch = FlowEpoch.currentEpochCounter + 3
     }

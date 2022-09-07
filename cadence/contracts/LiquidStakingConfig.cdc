@@ -11,7 +11,7 @@ import FlowIDTableStaking from "./flow/FlowIDTableStaking.cdc"
 pub contract LiquidStakingConfig {
 
     /// Minmum limit of staking
-	pub var minStakingAmount: UFix64
+    pub var minStakingAmount: UFix64
 
     /// Pauses
     pub var isStakingPaused: Bool
@@ -28,7 +28,7 @@ pub contract LiquidStakingConfig {
     pub var quickUnstakeFee: UFix64
     /// Fee of each epoch reward
     pub var rewardFee: UFix64
-	
+    
     // events
     pub event ConfigMinStakingAmount(newValue: UFix64, oldValue: UFix64)
     pub event ConfigStakingCap(newValue: UFix64, oldValue: UFix64)
@@ -43,38 +43,38 @@ pub contract LiquidStakingConfig {
     access(self) let _reservedFields: {String: AnyStruct}
 
     pub fun calcStakedPayout(stakedAmount: UFix64): UFix64 {
-		let systemTotalStaked = FlowIDTableStaking.getTotalStaked()
-		let epochTokenPayout = FlowIDTableStaking.getEpochTokenPayout()
+        let systemTotalStaked = FlowIDTableStaking.getTotalStaked()
+        let epochTokenPayout = FlowIDTableStaking.getEpochTokenPayout()
 
         if systemTotalStaked == 0.0 {
             return 0.0
         }
 
-		let rewardScale = epochTokenPayout / systemTotalStaked
-		var rewardAmount = stakedAmount * rewardScale
-		let nodeCutAmount = rewardAmount * FlowIDTableStaking.getRewardCutPercentage()
+        let rewardScale = epochTokenPayout / systemTotalStaked
+        var rewardAmount = stakedAmount * rewardScale
+        let nodeCutAmount = rewardAmount * FlowIDTableStaking.getRewardCutPercentage()
 
-		rewardAmount = rewardAmount - nodeCutAmount
+        rewardAmount = rewardAmount - nodeCutAmount
 
         let protocolCutAmount = rewardAmount * self.rewardFee
         rewardAmount = rewardAmount - protocolCutAmount
 
-		return rewardAmount	
-	}
+        return rewardAmount    
+    }
 
     /// Config Admin
     ///
     pub resource Admin {
 
-		pub fun setMinStakingAmount(minStakingAmount: UFix64) {
+        pub fun setMinStakingAmount(minStakingAmount: UFix64) {
             emit ConfigMinStakingAmount(newValue: minStakingAmount, oldValue: LiquidStakingConfig.minStakingAmount)
-			LiquidStakingConfig.minStakingAmount = minStakingAmount
-		}
+            LiquidStakingConfig.minStakingAmount = minStakingAmount
+        }
 
         pub fun setStakingCap(stakingCap: UFix64) {
             emit ConfigStakingCap(newValue: stakingCap, oldValue: LiquidStakingConfig.stakingCap)
-			LiquidStakingConfig.stakingCap = stakingCap
-		}
+            LiquidStakingConfig.stakingCap = stakingCap
+        }
 
         pub fun setQuickUnstakeFee(quickUnstakeFee: UFix64) {
             pre {
@@ -112,7 +112,7 @@ pub contract LiquidStakingConfig {
             emit ConfigWindowSize(newValue: windowSize, oldValue: LiquidStakingConfig.windowSizeBeforeStakingEnd)
             LiquidStakingConfig.windowSizeBeforeStakingEnd = windowSize
         }
-	}
+    }
 
 
     init() {

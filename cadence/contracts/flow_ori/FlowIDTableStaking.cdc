@@ -1342,7 +1342,7 @@ pub contract FlowIDTableStaking {
 
     /// Gets the claimed status of a particular piece of node metadata
     access(account) fun getClaimed(path: StoragePath, key: String): Bool {
-		let claimedDictionary = self.account.borrow<&{String: Bool}>(from: path)
+        let claimedDictionary = self.account.borrow<&{String: Bool}>(from: path)
             ?? panic("Invalid path for dictionary")
         return claimedDictionary[key] ?? false
     }
