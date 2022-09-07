@@ -10,6 +10,7 @@ pub fun main(): {String: AnyStruct} {
     return {
         "reserved request unstake tokens:": DelegatorManager.reservedRequestedToUnstakeAmount,
         "Reserved Flow": DelegatorManager.getProtocolReservedVaultBalance(),
+        "Unstaked vault": DelegatorManager.getTotalUnstakedVaultBalance(),
         "snapshot": currentSnapshot
     }
 }

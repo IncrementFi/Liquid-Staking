@@ -205,16 +205,11 @@ pub contract DelegatorManager {
             var rewardLoss = 0.0
             if lastFutureAmount > self.receivedReward {
                 rewardLoss = lastFutureAmount - self.receivedReward
+                emit RewardPermanentLoss(loss: rewardLoss, epoch: FlowEpoch.currentEpochCounter)
             }
 
             // Estimate the future reward
             var futureReward = LiquidStakingConfig.calcStakedPayout(stakedAmount: self.allDelegatorStaked)
-            if futureReward >= rewardLoss {
-                futureReward = futureReward - rewardLoss
-            } else {
-                futureReward = 0.0
-                emit RewardPermanentLoss(loss: rewardLoss - futureReward, epoch: FlowEpoch.currentEpochCounter)
-            }
             self.futureReward = futureReward
 
             emit ReceiveStakingReward(realReceivedAmount: self.receivedReward, lastEstimatedAmount: lastFutureAmount, epoch: FlowEpoch.currentEpochCounter)
@@ -324,7 +319,7 @@ pub contract DelegatorManager {
 
     /// Calculate the stFlow price
     ///
-    ///                      [totalCommitted] + [totalStaked] + [futureReward]
+    ///                      [currentReward] + [totalCommitted] + [totalStaked]
     /// stFlow_Flow price = ---------------------------------------------------
     ///                                    [stFlow totalSupply]
     ///
@@ -334,10 +329,10 @@ pub contract DelegatorManager {
         }
 
         let newEpochSnapshot: &EpochSnapshot = &(self.epochSnapshotHistory[FlowEpoch.currentEpochCounter]!) as &EpochSnapshot
-        let lastEpochSnapshot: &EpochSnapshot = &(self.epochSnapshotHistory[self.quoteEpochCounter]!) as &EpochSnapshot
+        
+        let currentReward = DelegatorManager.totalRewardedVault.balance
 
         let totalCommitted = newEpochSnapshot.allDelegatorCommitted
-                                        + DelegatorManager.totalRewardedVault.balance
 
         let totalStaked = newEpochSnapshot.allDelegatorStaked
                                     - DelegatorManager.reservedRequestedToUnstakeAmount
@@ -346,9 +341,7 @@ pub contract DelegatorManager {
                                     + newEpochSnapshot.redelegatedTokensToRequestUnstake
                                     + newEpochSnapshot.redelegatedTokensUnderUnstaking
         
-        let futureReward = newEpochSnapshot.futureReward
-
-        let flowSupply = totalCommitted + totalStaked + futureReward
+        let flowSupply = currentReward + totalCommitted + totalStaked
         let stFlowSupply = stFlowToken.totalSupply
 
         var stFlow_Flow = 0.0
@@ -826,6 +819,11 @@ pub contract DelegatorManager {
             upTo = UUIDs.length
         }
         return UUIDs.slice(from: from, upTo: upTo)
+    }
+
+    ///
+    pub fun getTotalUnstakedVaultBalance(): UFix64 {
+        return self.totalUnstakedVault.balance
     }
 
     /// Bot
