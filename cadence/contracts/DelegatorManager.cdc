@@ -14,6 +14,7 @@ import FlowEpoch from "./flow/FlowEpoch.cdc"
 
 import stFlowToken from "./stFlowToken.cdc"
 import LiquidStakingConfig from "./LiquidStakingConfig.cdc"
+import LiquidStakingError from "./LiquidStakingError.cdc"
 
 pub contract DelegatorManager {
 
@@ -528,6 +529,19 @@ pub contract DelegatorManager {
         pre {
             FlowEpoch.currentEpochCounter > self.quoteEpochCounter: "No need to collect, only at the beginning of each epoch"
         }
+
+        // When auto reward pay open
+        if FlowEpoch.automaticRewardsEnabled() == true {
+            if self.quoteEpochCounter > 0 {
+                assert(
+                    FlowEpoch.getEpochMetadata(self.quoteEpochCounter)!.rewardsPaid == true, message:
+                        LiquidStakingError.ErrorEncode(
+                            msg: "Flow has not paid the reward yet at epoch ".concat(self.quoteEpochCounter.toString()),
+                            err: LiquidStakingError.ErrorCode.REWARD_HAS_NOT_BEEN_PAID
+                        )
+                )
+            }
+        }
         
         if self.epochSnapshotHistory.containsKey(FlowEpoch.currentEpochCounter) == false {
             self.epochSnapshotHistory[FlowEpoch.currentEpochCounter] = EpochSnapshot(epochCounter: FlowEpoch.currentEpochCounter)
@@ -550,13 +564,15 @@ pub contract DelegatorManager {
             assert(currentDelegatorInfo.tokensCommitted == 0.0, message: "Committed tokens has not been moved to staked vault")
 
             if (lastDelegatorInfo != nil) {
-                // Hmm... the reward is delay paid again
-                if lastDelegatorInfo!.tokensStaked > 0.0 && currentDelegatorInfo.tokensRewarded == 0.0 {
-                    // Clear the previous collection, waiting for reward payment.
-                    self.epochSnapshotHistory.remove(key: FlowEpoch.currentEpochCounter)
-                    return
+                if FlowEpoch.automaticRewardsEnabled() == false {
+                    // Hmm... the reward is delay paid again
+                    if lastDelegatorInfo!.tokensStaked > LiquidStakingConfig.minStakingAmount && currentDelegatorInfo.tokensRewarded == 0.0 {
+                        // Clear the previous collection, waiting for reward payment.
+                        self.epochSnapshotHistory.remove(key: FlowEpoch.currentEpochCounter)
+                        return
+                    }
                 }
-                
+
                 // !!
                 // The node was removed by the FlowIDTableStaking.removeUnapprovedNodes()
                 // All the staked tokens will be moved to -> unstaking vault
