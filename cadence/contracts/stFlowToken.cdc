@@ -100,9 +100,6 @@ pub contract stFlowToken: FungibleToken {
         return <-create Vault(balance: 0.0)
     }
 
-    pub resource Administrator {
-    }
-
     // Mint tokens
     //
     // stFlow token will be mint only when the user stake flow tokens into liquid staking
@@ -154,9 +151,6 @@ pub contract stFlowToken: FungibleToken {
         // the `balance` field through the `Balance` interface
         //
         self.account.link<&stFlowToken.Vault{FungibleToken.Balance}>(self.tokenBalancePath, target: self.tokenVaultPath)
-
-        let admin <- create Administrator()
-        self.account.save(<-admin, to: /storage/stFlowTokenAdmin)
 
         // Emit an event that shows that the contract was initialized
         emit TokensInitialized(initialSupply: self.totalSupply)
