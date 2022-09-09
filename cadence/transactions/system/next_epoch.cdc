@@ -1,5 +1,5 @@
-import FlowEpoch from "../../contracts/flow/FlowEpoch.cdc"
-import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
+import FlowEpoch from "../../contracts/standard/emulator/FlowEpoch.cdc"
+import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableStaking.cdc"
 
 transaction(nextRewardAmount: UFix64) {
 

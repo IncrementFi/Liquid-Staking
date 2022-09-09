@@ -1,6 +1,6 @@
 import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
-import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
-import FlowEpoch from "../../contracts/flow/FlowEpoch.cdc"
+import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableStaking.cdc"
+import FlowEpoch from "../../contracts/standard/emulator/FlowEpoch.cdc"
 
 pub fun main(userAddr: Address?): {String: AnyStruct} {
     

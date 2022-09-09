@@ -10,11 +10,11 @@
 
  */
 
-import FungibleToken from "../standard/FungibleToken.cdc"
-import FlowToken from "../standard/FlowToken.cdc"
+import FungibleToken from "../FungibleToken.cdc"
+import FlowToken from "../FlowToken.cdc"
 import FlowIDTableStaking from "./FlowIDTableStaking.cdc"
 import LockedTokens from "./LockedTokens.cdc"
-import FlowStorageFees from "../standard/FlowStorageFees.cdc"
+import FlowStorageFees from "../FlowStorageFees.cdc"
 import FlowClusterQC from "./FlowClusterQC.cdc"
 import FlowDKG from "./FlowDKG.cdc"
 import FlowEpoch from "./FlowEpoch.cdc"
@@ -366,7 +366,7 @@ pub contract FlowStakingCollection {
             
             if self.nodeDelegators[nodeID] != nil {
                 let delegatorRef = (&self.nodeDelegators[nodeID] as &FlowIDTableStaking.NodeDelegator?)!
-                if delegatorRef.id == delegatorID {
+                if delegatorRef.id == delegatorID { 
                     let stakingInfo = FlowIDTableStaking.DelegatorInfo(nodeID: nodeID, delegatorID: delegatorID)
                     let totalStaked = stakingInfo.totalTokensInRecord() - stakingInfo.tokensRewarded
 
@@ -564,7 +564,7 @@ pub contract FlowStakingCollection {
                     panic("Cannot register a delegator for a node that is already being delegated to")
                 }
             }
-            ;
+            
             let tokens <- self.getTokens(amount: amount)
 
             let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)

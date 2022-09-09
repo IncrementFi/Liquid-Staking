@@ -1,4 +1,4 @@
-import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
+import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableStaking.cdc"
 import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
 import FlowToken from "../../contracts/standard/FlowToken.cdc"
 

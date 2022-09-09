@@ -6,7 +6,7 @@
 
 */
 
-import FlowIDTableStaking from "./flow/FlowIDTableStaking.cdc"
+import FlowIDTableStaking from "./standard/emulator/FlowIDTableStaking.cdc"
 
 pub contract LiquidStakingConfig {
 

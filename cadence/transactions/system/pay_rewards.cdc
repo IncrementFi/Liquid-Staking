@@ -1,4 +1,4 @@
-import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
+import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableStaking.cdc"
 
 // This transaction uses a staking admin capability
 // to pay rewards.

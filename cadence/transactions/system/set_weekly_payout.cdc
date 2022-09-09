@@ -1,4 +1,4 @@
-import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
+import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableStaking.cdc"
 
 transaction(payout: UFix64) {
 

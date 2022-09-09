@@ -25,10 +25,10 @@
 
  */
 
-import FlowToken from "../standard/FlowToken.cdc"
-import FungibleToken from "../standard/FungibleToken.cdc"
+import FlowToken from "../FlowToken.cdc"
+import FungibleToken from "../FungibleToken.cdc"
 import FlowIDTableStaking from "./FlowIDTableStaking.cdc"
-import FlowStorageFees from "../standard/FlowStorageFees.cdc"
+import FlowStorageFees from "../FlowStorageFees.cdc"
 import StakingProxy from "./StakingProxy.cdc"
 
 pub contract LockedTokens {

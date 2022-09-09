@@ -1,4 +1,4 @@
-import FlowIDTableStaking from "../../contracts/flow/FlowIDTableStaking.cdc"
+import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableStaking.cdc"
 
 pub fun main(): [AnyStruct] {
     var totalStaked = FlowIDTableStaking.getTotalStaked()

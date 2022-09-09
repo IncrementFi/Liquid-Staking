@@ -9,8 +9,8 @@
 import FlowToken from "./standard/FlowToken.cdc"
 import FungibleToken from "./standard/FungibleToken.cdc"
 
-import FlowIDTableStaking from "./flow/FlowIDTableStaking.cdc"
-import FlowEpoch from "./flow/FlowEpoch.cdc"
+import FlowIDTableStaking from "./standard/emulator/FlowIDTableStaking.cdc"
+import FlowEpoch from "./standard/emulator/FlowEpoch.cdc"
 
 import stFlowToken from "./stFlowToken.cdc"
 import LiquidStakingConfig from "./LiquidStakingConfig.cdc"

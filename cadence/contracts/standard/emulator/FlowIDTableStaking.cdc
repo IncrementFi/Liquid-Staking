@@ -27,9 +27,9 @@
 
  */
 
-import FungibleToken from "../standard/FungibleToken.cdc"
-import FlowToken from "../standard/FlowToken.cdc"
-import FlowFees from "../standard/FlowFees.cdc"
+import FungibleToken from "../FungibleToken.cdc"
+import FlowToken from "../FlowToken.cdc"
+import FlowFees from "../FlowFees.cdc"
 import Crypto
 
 
@@ -164,18 +164,18 @@ pub contract FlowIDTableStaking {
             tokensCommitted: @FungibleToken.Vault
         ) {
             pre {
-                id.length == 64: "Node ID length must be 32 bytes (64 hex characters)"
-                FlowIDTableStaking.isValidNodeID(id): "The node ID must have only numbers and lowercase hex characters"
+                //id.length == 64: "Node ID length must be 32 bytes (64 hex characters)"
+                //FlowIDTableStaking.isValidNodeID(id): "The node ID must have only numbers and lowercase hex characters"
                 FlowIDTableStaking.nodes[id] == nil: "The ID cannot already exist in the record"
                 role >= UInt8(1) && role <= UInt8(5): "The role must be 1, 2, 3, 4, or 5"
                 networkingAddress.length > 0 && networkingAddress.length <= 510: "The networkingAddress must be less than 510 characters"
-                networkingKey.length == 128: "The networkingKey length must be exactly 64 bytes (128 hex characters)"
-                stakingKey.length == 192: "The stakingKey length must be exactly 96 bytes (192 hex characters)"
+                //networkingKey.length == 128: "The networkingKey length must be exactly 64 bytes (128 hex characters)"
+                //stakingKey.length == 192: "The stakingKey length must be exactly 96 bytes (192 hex characters)"
                 !FlowIDTableStaking.getNetworkingAddressClaimed(address: networkingAddress): "The networkingAddress cannot have already been claimed"
                 !FlowIDTableStaking.getNetworkingKeyClaimed(key: networkingKey): "The networkingKey cannot have already been claimed"
                 !FlowIDTableStaking.getStakingKeyClaimed(key: stakingKey): "The stakingKey cannot have already been claimed"
             }
-
+            /*
             let stakeKey = PublicKey(
                 publicKey: stakingKey.decodeHex(),
                 signatureAlgorithm: SignatureAlgorithm.BLS_BLS12_381
@@ -185,7 +185,7 @@ pub contract FlowIDTableStaking {
                 publicKey: networkingKey.decodeHex(),
                 signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
             )
-
+            */
             // TODO: Verify the provided Proof of Possession of the staking private key
 
             self.id = id
@@ -1301,7 +1301,8 @@ pub contract FlowIDTableStaking {
 
         for nodeID in FlowIDTableStaking.getNodeIDs() {
             let nodeRecord = FlowIDTableStaking.borrowNodeRecord(nodeID)
-            let current = currentNodeIDs[nodeID] ?? false
+            //let current = currentNodeIDs[nodeID] ?? false
+            let current = true
 
             // To be considered staked, a node has to have tokens staked equal or above the minimum
             // Access nodes have a minimum of 0, so they need to be strictly greater than zero to be considered staked
@@ -1417,7 +1418,7 @@ pub contract FlowIDTableStaking {
         self.minimumStakeRequired = {UInt8(1): 250000.0, UInt8(2): 500000.0, UInt8(3): 1250000.0, UInt8(4): 135000.0, UInt8(5): 0.0}
         self.totalTokensStakedByNodeType = {UInt8(1): 0.0, UInt8(2): 0.0, UInt8(3): 0.0, UInt8(4): 0.0, UInt8(5): 0.0}
         self.epochTokenPayout = epochTokenPayout
-        self.nodeDelegatingRewardCut = rewardCut
+        self.nodeDelegatingRewardCut = 0.08
         self.rewardRatios = {UInt8(1): 0.168, UInt8(2): 0.518, UInt8(3): 0.078, UInt8(4): 0.236, UInt8(5): 0.0}
 
         let list: [String] = []
@@ -1430,3 +1431,4 @@ pub contract FlowIDTableStaking {
         self.account.save(<-create Admin(), to: self.StakingAdminStoragePath)
     }
 }
+ 

@@ -1,5 +1,5 @@
 import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
-import FlowEpoch from "../../contracts/flow/FlowEpoch.cdc"
+import FlowEpoch from "../../contracts/standard/emulator/FlowEpoch.cdc"
 import stFlowToken from "../../contracts/stFlowToken.cdc"
 import LiquidStaking from "../../contracts/LiquidStaking.cdc"
 import DelegatorManager from "../../contracts/DelegatorManager.cdc"
