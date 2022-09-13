@@ -875,24 +875,35 @@ pub contract DelegatorManager {
             }
             let delegator = DelegatorManager.borrowDelegator(uuid: delegatorUUID)!
             let delegatorInfo = FlowIDTableStaking.DelegatorInfo(nodeID: delegator.nodeID, delegatorID: delegator.id)
-            let tokensStaked = delegatorInfo.tokensStaked
+            let tokensStakedLeft = delegatorInfo.tokensStaked - delegatorInfo.tokensRequestedToUnstake
+            let tokensCommitted = delegatorInfo.tokensCommitted
 
             var unstakeAmount = requestUnstakeAmount
-            // Unstaking all
-            if requestUnstakeAmount == UFix64.max {
-                if DelegatorManager.reservedRequestedToUnstakeAmount >= tokensStaked {
-                    unstakeAmount = tokensStaked
+            // Try unstaking all
+            if unstakeAmount == UFix64.max {
+                if DelegatorManager.reservedRequestedToUnstakeAmount >= tokensStakedLeft + tokensCommitted {
+                    unstakeAmount = tokensStakedLeft + tokensCommitted
                 } else {
                     unstakeAmount = DelegatorManager.reservedRequestedToUnstakeAmount
                 }
-            } else {
-                assert(DelegatorManager.reservedRequestedToUnstakeAmount >= unstakeAmount, message: "Handle unstake requests out of limit")
             }
 
-            // RequestUnstaking
-            delegator.requestUnstaking(amount: unstakeAmount + delegatorInfo.tokensCommitted)
-            delegator.delegateUnstakedTokens(amount: delegatorInfo.tokensCommitted)
+            assert(DelegatorManager.reservedRequestedToUnstakeAmount >= unstakeAmount, message: "Handle unstake requests out of limit")
+
+            // Request unstaking
+            if unstakeAmount <= tokensStakedLeft {
+                // unstake only from staked tokens and leave committed tokens 
+                delegator.requestUnstaking(amount: unstakeAmount + tokensCommitted)
+                let committedVault <- delegator.withdrawUnstakedTokens(amount: tokensCommitted)
+                delegator.delegateNewTokens(from: <- committedVault)
+            } else {
+                // unstake from all staked tokens and some committed tokens
+                delegator.requestUnstaking(amount: tokensStakedLeft + tokensCommitted)
+                let committedVault <- delegator.withdrawUnstakedTokens(amount: tokensStakedLeft + tokensCommitted - unstakeAmount)
+                delegator.delegateNewTokens(from: <- committedVault)
+            }
             
+            // update reserved unstaked requests
             DelegatorManager.reservedRequestedToUnstakeAmount = DelegatorManager.reservedRequestedToUnstakeAmount - unstakeAmount
 
             // update snapshot
