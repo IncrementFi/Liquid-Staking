@@ -12,7 +12,7 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
     let currentSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
     let currentBlockView = getCurrentBlock().view
     let currentEpochMetadata = FlowEpoch.getEpochMetadata(DelegatorManager.quoteEpochCounter)!
-    let showEpochMetadata = FlowEpoch.getEpochMetadata(FlowEpoch.currentEpochCounter)!
+    let showEpochMetadata = FlowEpoch.getEpochMetadata(DelegatorManager.quoteEpochCounter)!
 
     var unlockEpoch = FlowEpoch.currentEpochCounter + 2
     if FlowIDTableStaking.stakingEnabled() {

@@ -744,7 +744,7 @@ pub contract DelegatorManager {
 
     ///
     pub fun borrowCurrentEpochSnapshot(): &EpochSnapshot {
-        return self.borrowEpochSnapshot(at: FlowEpoch.currentEpochCounter)
+        return self.borrowEpochSnapshot(at: self.quoteEpochCounter)
     }
 
     ///
