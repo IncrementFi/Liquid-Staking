@@ -14,7 +14,7 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
         "stFlowFlow": 1.0015,
         "FlowStFlow": 0.9985,
         "FlowUSD": 2.4,
-        "TotalStaked": 9998.0,
+        "TotalStaked": 9998.0,  // 协议的stake数量
         "APR": 0.08,  // 这是APR，前端显示APY =  (1+0.08/356)^356 - 1 = 0.085
 
         "EpochMetadata": {

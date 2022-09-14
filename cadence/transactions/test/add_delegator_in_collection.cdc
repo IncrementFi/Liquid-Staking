@@ -1,7 +1,7 @@
 import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
 import FlowToken from "../../contracts/standard/FlowToken.cdc"
 import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableStaking.cdc"
-import FlowStakingCollection from "../../contracts/flow/FlowStakingCollection.cdc"
+import FlowStakingCollection from "../../contracts/standard/emulator/FlowStakingCollection.cdc"
 /// Registers a delegator in the staking collection resource
 /// for the specified nodeID and the amount of tokens to commit
 transaction(id: String, amount: UFix64) {

@@ -1,7 +1,7 @@
 import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
 import stFlowToken from "../../contracts/stFlowToken.cdc"
 import LiquidStaking from "../../contracts/LiquidStaking.cdc"
-import FlowStakingCollection from "../../contracts/flow/FlowStakingCollection.cdc"
+import FlowStakingCollection from "../../contracts/standard/emulator/FlowStakingCollection.cdc"
 
 pub fun main(userAddr: Address): {String: AnyStruct} {
     

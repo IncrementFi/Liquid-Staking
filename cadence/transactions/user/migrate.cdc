@@ -2,7 +2,7 @@ import LiquidStaking from "../../contracts/LiquidStaking.cdc"
 import stFlowToken from "../../contracts/stFlowToken.cdc"
 import FlowToken from "../../contracts/standard/FlowToken.cdc"
 import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
-import FlowStakingCollection from "../../contracts/flow/FlowStakingCollection.cdc"
+import FlowStakingCollection from "../../contracts/standard/emulator/FlowStakingCollection.cdc"
 
 transaction(nodeID: String, delegatorID: UInt32) {
     prepare(userAccount: AuthAccount) {
