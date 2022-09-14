@@ -57,21 +57,21 @@ pub contract LiquidStaking {
     pub fun stake(flowVault: @FlowToken.Vault): @stFlowToken.Vault {
         pre {
             // Min staking amount check
-            flowVault.balance > LiquidStakingConfig.minStakingAmount: "Stake amount must be greater than ".concat(LiquidStakingConfig.minStakingAmount.toString())
+            flowVault.balance > LiquidStakingConfig.minStakingAmount: LiquidStakingError.ErrorEncode(msg: "Stake amount must be greater than ".concat(LiquidStakingConfig.minStakingAmount.toString()), err: LiquidStakingError.ErrorCode.INVALID_PARAMETERS)
             // Staking amount cap check
-            LiquidStakingConfig.stakingCap >= flowVault.balance + DelegatorManager.getTotalValidStakingAmount(): "Exceed stake cap"
+            LiquidStakingConfig.stakingCap >= flowVault.balance + DelegatorManager.getTotalValidStakingAmount(): LiquidStakingError.ErrorEncode(msg: "Exceed stake cap: ".concat(LiquidStakingConfig.stakingCap.toString()), err: LiquidStakingError.ErrorCode.EXCEED_STAKE_CAP)
             // Pause check
-            LiquidStakingConfig.isStakingPaused == false: "Staking is paused"
+            LiquidStakingConfig.isStakingPaused == false: LiquidStakingError.ErrorEncode(msg: "Staking is paused", err: LiquidStakingError.ErrorCode.STAKE_NOT_OPEN)
             // Flow blockchain staking state check
-            FlowIDTableStaking.stakingEnabled(): "The Flow blockchain currently pauses the staking operation."
-            // Protocol staking state check
-            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Please wait thef protocol to enter the new staking epoch"
+            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot stake if the staking auction isn't in progress", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
+            // Protocol quote staking state check
+            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot stake until the new quote epoch starts", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
         }
 
         let flowAmountToStake = flowVault.balance
         let stFlowAmountToMint = self.calcStFlowFromFlow(flowAmount: flowAmountToStake)
         
-        //
+        // Stake to committed tokens
         DelegatorManager.depositToCommitted(flowVault: <-flowVault)
 
         // Mint stFlow
@@ -89,15 +89,16 @@ pub contract LiquidStaking {
     pub fun unstakeSlowly(stFlowVault: @stFlowToken.Vault): @UnstakingVoucher {
         pre {
             // Pause check
-            LiquidStakingConfig.isUnstakingPaused == false: "Unstaking is paused"
+            LiquidStakingConfig.isUnstakingPaused == false: LiquidStakingError.ErrorEncode(msg: "Unstaking is paused", err: LiquidStakingError.ErrorCode.UNSTAKE_NOT_OPEN)
         }
+
         let stFlowAmountToBurn = stFlowVault.balance
         let flowAmountToUnstake = self.calcFlowFromStFlow(stFlowAmount: stFlowAmountToBurn)
 
         // Burn stFlow
         stFlowToken.burnTokens(from: <-stFlowVault)
 
-        //
+        // Request unstake from staked & committed tokens
         DelegatorManager.requestWithdrawFromStaked(amount: flowAmountToUnstake)
         
         let currentBlockView = getCurrentBlock().view
@@ -105,12 +106,12 @@ pub contract LiquidStaking {
 
         var unlockEpoch = FlowEpoch.currentEpochCounter + 2
         if FlowIDTableStaking.stakingEnabled() {
-            // Before flowchain ends staking, a window of processing time needs to be reserved for the bots.
+            // Before staking auction ends, a window of processing time needs to be saved for handling reserved unstaking requests
             if currentBlockView + LiquidStakingConfig.windowSizeBeforeStakingEnd >= stakingEndView {
                 unlockEpoch = FlowEpoch.currentEpochCounter + 3
             }
         } else {
-            // During Flowchain stops staking, all unstaking requests will be reserved until the next epoch for future processing.
+            // During staking setup & commit stage, all unstaking requests will be reserved until the next epoch
             unlockEpoch = FlowEpoch.currentEpochCounter + 3
         }
         
@@ -132,12 +133,13 @@ pub contract LiquidStaking {
     pub fun unstakeQuickly(stFlowVault: @stFlowToken.Vault): @FlowToken.Vault {
         pre {
              // Flow chain unstaking state check
-            FlowIDTableStaking.stakingEnabled(): "The Flow blockchain currently pauses the unstaking operation."
+            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot unstake if the staking auction isn't in progress", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
             // Pause check
-            LiquidStakingConfig.isUnstakingPaused == false: "Unstaking is paused"
+            LiquidStakingConfig.isUnstakingPaused == false: LiquidStakingError.ErrorEncode(msg: "Unstaking is paused", err: LiquidStakingError.ErrorCode.UNSTAKE_NOT_OPEN)
             // Protocol unstaking state check
-            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Please wait the protocol to enter the new staking epoch"
+            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot stake until the new quote epoch starts", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
         }
+
         let stFlowAmountToBurn = stFlowVault.balance
         let flowAmountToUnstake = self.calcFlowFromStFlow(stFlowAmount: stFlowAmountToBurn)
 
@@ -163,7 +165,7 @@ pub contract LiquidStaking {
     pub fun cashingUnstakingVoucher(voucher: @UnstakingVoucher): @FlowToken.Vault {
         pre {
             // Waiting all unstaked tokens to be collected
-            DelegatorManager.quoteEpochCounter >= voucher.unlockEpoch: "The cashing day hasn't arrived yet"
+            DelegatorManager.quoteEpochCounter >= voucher.unlockEpoch: LiquidStakingError.ErrorEncode(msg: "The cashing day hasn't arrived yet", err: LiquidStakingError.ErrorCode.CANNOT_CASHING_UNSTAKING_VOUCHER)
         }
         
         let cashingFlowAmount = voucher.lockedFlowAmount
@@ -185,12 +187,13 @@ pub contract LiquidStaking {
     pub fun migrate(delegator: @FlowIDTableStaking.NodeDelegator): @stFlowToken.Vault {
         pre {
             // Flowchain staking state check
-            FlowIDTableStaking.stakingEnabled(): "System staking disabled"
+            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot migrate if the staking auction isn't in progress", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
             // Pause check
-            LiquidStakingConfig.isMigratingPaused == false: "Migrating is paused"
+            LiquidStakingConfig.isMigratingPaused == false: LiquidStakingError.ErrorEncode(msg: "Migrating is paused", err: LiquidStakingError.ErrorCode.MIGRATE_NOT_OPEN)
             // Protocol staking state check
-            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Please wait the protocol to enter the new staking epoch"
+            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot stake until the new quote epoch starts", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
         }
+        
         let delegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: delegator.nodeID, delegatorID: delegator.id)
         
         assert(LiquidStakingConfig.stakingCap >= delegatroInfo.tokensStaked + DelegatorManager.getTotalValidStakingAmount(), message: "Exceed stake cap")

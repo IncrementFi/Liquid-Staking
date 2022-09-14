@@ -527,7 +527,7 @@ pub contract DelegatorManager {
                     FlowEpoch.getEpochMetadata(self.quoteEpochCounter)!.rewardsPaid == true, message:
                         LiquidStakingError.ErrorEncode(
                             msg: "Flow has not paid the reward yet at epoch ".concat(self.quoteEpochCounter.toString()),
-                            err: LiquidStakingError.ErrorCode.REWARD_NOT_PAID
+                            err: LiquidStakingError.ErrorCode.REWARD_HAS_NOT_BEEN_PAID
                         )
                 )
             }
