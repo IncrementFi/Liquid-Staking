@@ -401,35 +401,25 @@ pub contract DelegatorManager {
     /// Called by unstakeSlowly()
     ///
     access(account) fun requestWithdrawFromStaked(amount: UFix64) {
-        
+
         let currentEpochSnapshot = self.borrowCurrentEpochSnapshot()
+        assert(
+            currentEpochSnapshot.allDelegatorStaked + currentEpochSnapshot.allDelegatorCommitted
+                >=
+                amount + currentEpochSnapshot.allDelegatorRequestedToUnstake + self.reservedRequestedToUnstakeAmount
+            , message: LiquidStakingError.ErrorEncode(
+                msg: "Not enough tokens to request unstake",
+                err: LiquidStakingError.ErrorCode.INVALID_PARAMETERS
+            )
+        )
+    
         let leftStakedTokens = currentEpochSnapshot.allDelegatorStaked
-                                        -
-                                        (self.reservedRequestedToUnstakeAmount + currentEpochSnapshot.allDelegatorRequestedToUnstake)
+                                + currentEpochSnapshot.allDelegatorCommitted
+                                - currentEpochSnapshot.allDelegatorRequestedToUnstake
+                                - self.reservedRequestedToUnstakeAmount
         
-        // all from staked tokens
-        if leftStakedTokens >= amount {
-            self.reservedRequestedToUnstakeAmount = self.reservedRequestedToUnstakeAmount + amount
-            log("unstake")
-            log(amount.toString())
-        }
-        // the rest from committed tokens
-        else {
-            //
-            self.reservedRequestedToUnstakeAmount = self.reservedRequestedToUnstakeAmount + leftStakedTokens
-
-            let reservedDelegator = self.borrowApprovedDelegator(nodeID: self.reservedNodeIDToStake)!
-            let reservedDelegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: reservedDelegator.nodeID, delegatorID: reservedDelegator.id)
-        
-            assert(reservedDelegatroInfo.tokensCommitted >= amount - leftStakedTokens, message: "Not enough tokens to request unstake")
-            log("unstake from commit")
-            log((amount - leftStakedTokens).toString())
-            // committed vault -> unstaked vault
-            reservedDelegator.requestUnstaking(amount: amount - leftStakedTokens)
-
-            // Update snapshot
-            self.borrowCurrentEpochSnapshot().upsertDelegatorInfo(nodeID: reservedDelegator.nodeID, delegatorID: reservedDelegator.id)
-        }
+        // reserve unstake requests
+        self.reservedRequestedToUnstakeAmount = self.reservedRequestedToUnstakeAmount + amount
     }
 
     /// Withdraw tokens from unstaked vault
@@ -537,7 +527,7 @@ pub contract DelegatorManager {
                     FlowEpoch.getEpochMetadata(self.quoteEpochCounter)!.rewardsPaid == true, message:
                         LiquidStakingError.ErrorEncode(
                             msg: "Flow has not paid the reward yet at epoch ".concat(self.quoteEpochCounter.toString()),
-                            err: LiquidStakingError.ErrorCode.REWARD_HAS_NOT_BEEN_PAID
+                            err: LiquidStakingError.ErrorCode.REWARD_NOT_PAID
                         )
                 )
             }

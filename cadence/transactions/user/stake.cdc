@@ -9,10 +9,12 @@ transaction(flowAmount: UFix64) {
         let inVault <- flowVault.withdraw(amount: flowAmount) as! @FlowToken.Vault
         
         let outVault <- LiquidStaking.stake(flowVault: <-inVault)
-
+        
         var stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
         if stFlowVaultRef == nil {
             userAccount.save(<- stFlowToken.createEmptyVault(), to: stFlowToken.tokenVaultPath)
+            userAccount.unlink(stFlowToken.tokenReceiverPath)
+            userAccount.unlink(stFlowToken.tokenBalancePath)
             userAccount.link<&stFlowToken.Vault{FungibleToken.Receiver}>(stFlowToken.tokenReceiverPath, target: stFlowToken.tokenVaultPath)
             userAccount.link<&stFlowToken.Vault{FungibleToken.Balance}>(stFlowToken.tokenBalancePath, target: stFlowToken.tokenVaultPath)
 
