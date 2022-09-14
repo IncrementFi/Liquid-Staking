@@ -1,150 +1,131 @@
 import FungibleToken from "./FungibleToken.cdc"
 import FlowToken from "./FlowToken.cdc"
-/*
- * The FlowStorageFees smart contract
- *
- * An account's storage capacity determines up to how much storage on chain it can use. 
- * A storage capacity is calculated by multiplying the amount of reserved flow with `StorageFee.storageMegaBytesPerReservedFLOW`
- * The minimum amount of flow tokens reserved for storage capacity is `FlowStorageFees.minimumStorageReservation` this is paid during account creation, by the creator.
- * 
- * At the end of all transactions, any account that had any value changed in their storage 
- * has their storage capacity checked against their storage used and their main flow token vault against the minimum reservation.
- * If any account fails this check the transaction wil fail.
- * 
- * An account moving/deleting its `FlowToken.Vault` resource will result 
- * in the transaction failing because the account will have no storage capacity.
- * 
- */
 
-pub contract FlowStorageFees {
+pub contract FlowFees {
 
-    // Emitted when the amount of storage capacity an account has per reserved Flow token changes
-    pub event StorageMegaBytesPerReservedFLOWChanged(_ storageMegaBytesPerReservedFLOW: UFix64)
+    // Event that is emitted when tokens are deposited to the fee vault
+    pub event TokensDeposited(amount: UFix64)
 
-    // Emitted when the minimum amount of Flow tokens that an account needs to have reserved for storage capacity changes.
-    pub event MinimumStorageReservationChanged(_ minimumStorageReservation: UFix64)
+    // Event that is emitted when tokens are withdrawn from the fee vault
+    pub event TokensWithdrawn(amount: UFix64)
 
-    // Defines how much storage capacity every account has per reserved Flow token.
-    // definition is written per unit of flow instead of the inverse, 
-    // so there is no loss of precision calculating storage from flow, 
-    // but there is loss of precision when calculating flow per storage.
-    pub var storageMegaBytesPerReservedFLOW: UFix64
+    // Event that is emitted when fees are deducted
+    pub event FeesDeducted(amount: UFix64, inclusionEffort: UFix64, executionEffort: UFix64)
 
-    // Defines the minimum amount of Flow tokens that every account needs to have reserved for storage capacity.
-    // If an account has less then this amount reserved by the end of any transaction it participated in, the transaction will fail.
-    pub var minimumStorageReservation: UFix64
+    // Event that is emitted when fee parameters change
+    pub event FeeParametersChanged(surgeFactor: UFix64, inclusionEffortCost: UFix64, executionEffortCost: UFix64)
 
-    // An administrator resource that can change the parameters of the FlowStorageFees smart contract.
+    // Private vault with public deposit function
+    access(self) var vault: @FlowToken.Vault
+
+    pub fun deposit(from: @FungibleToken.Vault) {
+        let from <- from as! @FlowToken.Vault
+        let balance = from.balance
+        self.vault.deposit(from: <-from)
+        emit TokensDeposited(amount: balance)
+    }
+
+    /// Get the balance of the Fees Vault
+    pub fun getFeeBalance(): UFix64 {
+        return self.vault.balance
+    }
+
     pub resource Administrator {
-
-        // Changes the amount of storage capacity an account has per accounts' reserved storage FLOW.
-        pub fun setStorageMegaBytesPerReservedFLOW(_ storageMegaBytesPerReservedFLOW: UFix64) {
-            if FlowStorageFees.storageMegaBytesPerReservedFLOW == storageMegaBytesPerReservedFLOW {
-              return
-            }
-            FlowStorageFees.storageMegaBytesPerReservedFLOW = storageMegaBytesPerReservedFLOW
-            emit StorageMegaBytesPerReservedFLOWChanged(storageMegaBytesPerReservedFLOW)
+        // withdraw
+        //
+        // Allows the administrator to withdraw tokens from the fee vault
+        pub fun withdrawTokensFromFeeVault(amount: UFix64): @FungibleToken.Vault {
+            let vault <- FlowFees.vault.withdraw(amount: amount)
+            emit TokensWithdrawn(amount: amount)
+            return <-vault
         }
 
-        // Changes the minimum amount of FLOW an account has to have reserved.
-        pub fun setMinimumStorageReservation(_ minimumStorageReservation: UFix64) {
-            if FlowStorageFees.minimumStorageReservation == minimumStorageReservation {
-              return
-            }
-            FlowStorageFees.minimumStorageReservation = minimumStorageReservation
-            emit MinimumStorageReservationChanged(minimumStorageReservation)
+        /// Allows the administrator to change all the fee parameters at once
+        pub fun setFeeParameters(surgeFactor: UFix64, inclusionEffortCost: UFix64, executionEffortCost: UFix64) {
+            let newParameters = FeeParameters(surgeFactor: surgeFactor, inclusionEffortCost: inclusionEffortCost, executionEffortCost: executionEffortCost)
+            FlowFees.setFeeParameters(newParameters)
         }
 
-        access(contract) init(){}
-    }
-
-    /// calculateAccountCapacity returns the storage capacity of an account
-    ///
-    /// Returns megabytes
-    /// If the account has no default balance it is counted as a balance of 0.0 FLOW
-    pub fun calculateAccountCapacity(_ accountAddress: Address): UFix64 {
-        var balance = 0.0
-        if let balanceRef = getAccount(accountAddress)
-            .getCapability<&FlowToken.Vault{FungibleToken.Balance}>(/public/flowTokenBalance)!
-            .borrow() {
-                balance = balanceRef.balance
-        }
-
-        // get address token balance
-        if balance < self.minimumStorageReservation {
-            // if < then minimum return 0
-            return 0.0
-        } else {
-            // return balance multiplied with megabytes per flow 
-            return balance.saturatingMultiply(self.storageMegaBytesPerReservedFLOW)
+        /// Allows the administrator to change the fee surge factor
+        pub fun setFeeSurgeFactor(_ surgeFactor: UFix64) {
+            let oldParameters = FlowFees.getFeeParameters()
+            let newParameters = FeeParameters(surgeFactor: surgeFactor, inclusionEffortCost: oldParameters.inclusionEffortCost, executionEffortCost: oldParameters.executionEffortCost)
+            FlowFees.setFeeParameters(newParameters)
         }
     }
 
-    /// calculateAccountsCapacity returns the storage capacity of a batch of accounts
-    pub fun calculateAccountsCapacity(_ accountAddresses: [Address]): [UFix64] {
-        let capacities: [UFix64] = []
-        for accountAddress in accountAddresses {
-            let capacity = self.calculateAccountCapacity(accountAddress)
-            capacities.append(capacity)
+    /// A struct holding the fee parameters needed to calculate the fees
+    pub struct FeeParameters {
+        /// The surge factor is used to make transaction fees respond to high loads on the network
+        pub var surgeFactor: UFix64
+        /// The FLOW cost of one unit of inclusion effort. The FVM is responsible for metering inclusion effort.
+        pub var inclusionEffortCost: UFix64
+        /// The FLOW cost of one unit of execution effort. The FVM is responsible for metering execution effort.
+        pub var executionEffortCost: UFix64
+
+        init(surgeFactor: UFix64, inclusionEffortCost: UFix64, executionEffortCost: UFix64){
+            self.surgeFactor = surgeFactor
+            self.inclusionEffortCost = inclusionEffortCost
+            self.executionEffortCost = executionEffortCost
         }
-        return capacities
     }
 
-    // Amount in Flow tokens
-    // Returns megabytes
-    pub fun flowToStorageCapacity(_ amount: UFix64): UFix64 {
-        return amount.saturatingMultiply(FlowStorageFees.storageMegaBytesPerReservedFLOW)
-    }
+    /// Called when a transaction is submitted to deduct the fee
+    /// from the AuthAccount that submitted it
+    pub fun deductTransactionFee(_ acct: AuthAccount, inclusionEffort: UFix64, executionEffort: UFix64) {
+        var feeAmount = self.computeFees(inclusionEffort: inclusionEffort, executionEffort: executionEffort)
 
-    // Amount in megabytes
-    // Returns Flow tokens
-    pub fun storageCapacityToFlow(_ amount: UFix64): UFix64 {
-        if FlowStorageFees.storageMegaBytesPerReservedFLOW == 0.0 as UFix64 {
-            return 0.0 as UFix64
-        }
-        // possible loss of precision
-        // putting the result back into `flowToStorageCapacity` might not yield the same result
-        return amount / FlowStorageFees.storageMegaBytesPerReservedFLOW
-    }
-
-    // converts storage used from UInt64 Bytes to UFix64 Megabytes.
-    pub fun convertUInt64StorageBytesToUFix64Megabytes(_ storage: UInt64): UFix64 {
-        // safe convert UInt64 to UFix64 (without overflow)
-        let f = UFix64(storage % 100000000 as UInt64) * 0.00000001 as UFix64 + UFix64(storage / 100000000 as UInt64)
-        // decimal point correction. Megabytes to bytes have a conversion of 10^-6 while UFix64 minimum value is 10^-8
-        let storageMb = f.saturatingMultiply(100.0)
-        return storageMb
-    }
-
-    /// Gets "available" balance of an account
-    ///
-    /// The available balance is its default token balance minus what is reserved for storage.
-    /// If the account has no default balance it is counted as a balance of 0.0 FLOW
-    pub fun defaultTokenAvailableBalance(_ accountAddress: Address): UFix64 {
-        //get balance of account
-        let acct = getAccount(accountAddress)
-        var balance = 0.0
-        if let balanceRef = acct
-            .getCapability(/public/flowTokenBalance)
-            .borrow<&FlowToken.Vault{FungibleToken.Balance}>() {
-            balance = balanceRef.balance
+        if feeAmount == UFix64(0) {
+            // If there are no fees to deduct, do not continue, 
+            // so that there are no unnecessarily emitted events
+            return
         }
 
-        // get how much should be reserved for storage
-        var reserved = self.storageCapacityToFlow(self.convertUInt64StorageBytesToUFix64Megabytes(acct.storageUsed))
-        // at least self.minimumStorageReservation should be reserved
-        if reserved < self.minimumStorageReservation {
-            reserved = self.minimumStorageReservation
-        }
+        let tokenVault = acct.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
+            ?? panic("Unable to borrow reference to the default token vault")
 
-        return balance.saturatingSubtract(reserved)
+        
+        if feeAmount > tokenVault.balance {
+            // In the future this code path will never be reached, 
+            // as payers that are under account minimum balance will not have their transactions included in a collection
+            //
+            // Currently this is not used to fail the transaction (as that is the responsibility of the minimum account balance logic),
+            // But is used to reduce the balance of the vault to 0.0, if the vault has less available balance than the transaction fees. 
+            feeAmount = tokenVault.balance
+        }
+        
+        let feeVault <- tokenVault.withdraw(amount: feeAmount)
+        self.vault.deposit(from: <-feeVault)
+
+        // The fee calculation can be reconstructed using the data from this event and the FeeParameters at the block when the event happened
+        emit FeesDeducted(amount: feeAmount, inclusionEffort: inclusionEffort, executionEffort: executionEffort)
     }
 
-    init() {
-        self.storageMegaBytesPerReservedFLOW = 1.0 // 1 Mb per 1 Flow token
-        self.minimumStorageReservation = 0.0 // or 0 kb of minimum storage reservation
+    pub fun getFeeParameters(): FeeParameters {
+        return self.account.copy<FeeParameters>(from: /storage/FlowTxFeeParameters) ?? panic("Error getting tx fee parameters. They need to be initialized first!")
+    }
+
+    access(self) fun setFeeParameters(_ feeParameters: FeeParameters) {
+        // empty storage before writing new FeeParameters to it
+        self.account.load<FeeParameters>(from: /storage/FlowTxFeeParameters)
+        self.account.save(feeParameters,to: /storage/FlowTxFeeParameters)
+        emit FeeParametersChanged(surgeFactor: feeParameters.surgeFactor, inclusionEffortCost: feeParameters.inclusionEffortCost, executionEffortCost: feeParameters.executionEffortCost)
+    }
+
+    
+    // compute the transaction fees with the current fee parameters and the given inclusionEffort and executionEffort
+    pub fun computeFees(inclusionEffort: UFix64, executionEffort: UFix64): UFix64 {
+        let params = self.getFeeParameters()
+        
+        let totalFees = params.surgeFactor * ( inclusionEffort * params.inclusionEffortCost + executionEffort * params.executionEffortCost )
+        return totalFees
+    }
+
+    init(adminAccount: AuthAccount) {
+        // Create a new FlowToken Vault and save it in storage
+        self.vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
 
         let admin <- create Administrator()
-        self.account.save(<-admin, to: /storage/storageFeesAdmin)
+        adminAccount.save(<-admin, to: /storage/flowFeesAdmin)
     }
 }

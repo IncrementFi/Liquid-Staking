@@ -18,6 +18,7 @@ import FlowStorageFees from "../FlowStorageFees.cdc"
 import FlowClusterQC from "./FlowClusterQC.cdc"
 import FlowDKG from "./FlowDKG.cdc"
 import FlowEpoch from "./FlowEpoch.cdc"
+
 pub contract FlowStakingCollection {
 
     /// Account paths
@@ -217,7 +218,6 @@ pub contract FlowStakingCollection {
                 }
             } else {
                 // Since there is no locked account, all tokens have to come from the normal unlocked balance
-
                 assert(
                     amount <= unlockedBalance,
                     message: "Insufficient total Flow balance"
@@ -391,7 +391,6 @@ pub contract FlowStakingCollection {
         }
 
         /// Operations to register new staking objects
-
         /// Function to register a new Staking Record to the Staking Collection
         pub fun registerNode(id: String, role: UInt8, networkingAddress: String, networkingKey: String, stakingKey: String, amount: UFix64, payer: AuthAccount): AuthAccount? {
 
@@ -479,7 +478,6 @@ pub contract FlowStakingCollection {
             let nodeInfo = FlowIDTableStaking.NodeInfo(nodeID: nodeID)
 
             // Make sure that the QC or DKG object in the machine account is correct for this node ID
-
             if nodeInfo.role == FlowEpoch.NodeRole.Collector.rawValue {
                 let qcVoterRef = machineAccount.borrow<&FlowClusterQC.Voter>(from: FlowClusterQC.VoterStoragePath)
                     ?? panic("Could not access QC Voter object from the provided machine account")
@@ -596,12 +594,10 @@ pub contract FlowStakingCollection {
         }
 
         // Staking Operations
-
         // The owner calls the same function whether or not they are staking for a node or delegating.
         // If they are staking for a node, they provide their node ID and `nil` as the delegator ID
         // If they are staking for a delegator, they provide the node ID for the node they are delegating to
         // and their delegator ID to specify that it is for their delegator object
-
         /// Updates the stored networking address for the specified node
         pub fun updateNetworkingAddress(nodeID: String, newAddress: String) {
             pre {
@@ -812,7 +808,6 @@ pub contract FlowStakingCollection {
         }
 
         // Closers
-
         /// Closes an existing stake or delegation, moving all withdrawable tokens back to the users account and removing the stake
         /// or delegator object from the StakingCollection.
         pub fun closeStake(nodeID: String, delegatorID: UInt32?) {
@@ -898,7 +893,6 @@ pub contract FlowStakingCollection {
         }
 
         /// Getters
-
         /// Function to get all node ids for all Staking records in the StakingCollection
         pub fun getNodeIDs(): [String] {
             let nodeIDs: [String] = self.nodeStakers.keys
@@ -1004,7 +998,6 @@ pub contract FlowStakingCollection {
     } 
 
     // Getter functions for accounts StakingCollection information
-
     /// Function to get see if a node or delegator exists in an accounts staking collection
     pub fun doesStakeExist(address: Address, nodeID: String, delegatorID: UInt32?): Bool {
         let account = getAccount(address)

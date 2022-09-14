@@ -144,7 +144,6 @@ pub contract FlowStorageFees {
     init() {
         self.storageMegaBytesPerReservedFLOW = 1.0 // 1 Mb per 1 Flow token
         self.minimumStorageReservation = 0.0 // or 0 kb of minimum storage reservation
-
         let admin <- create Administrator()
         self.account.save(<-admin, to: /storage/storageFeesAdmin)
     }

@@ -1,10 +1,8 @@
 // This contract defines an interface for node stakers
 // to use to be able to perform common staking actions
-
 // It also defines a resource that a node operator can
 // use to store staking proxies for all of their node operation
 // relationships
-
 pub contract StakingProxy {
 
     /// path to store the node operator resource
@@ -24,6 +22,7 @@ pub contract StakingProxy {
 
         init(nodeID: String, role: UInt8, networkingAddress: String, networkingKey: String, stakingKey: String) {
             pre {
+                nodeID.length == 64: "Node ID length must be 32 bytes (64 hex characters)"
                 networkingAddress.length > 0 && networkingKey.length > 0 && stakingKey.length > 0:
                         "Address and Key have to be the correct length"
             }

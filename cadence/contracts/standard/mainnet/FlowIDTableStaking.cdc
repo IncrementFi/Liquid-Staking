@@ -1,28 +1,36 @@
-/*
+ /*
+
     FlowIDTableStaking
+
     The Flow ID Table and Staking contract manages
     node operators' and delegators' information
     and Flow tokens that are staked as part of the Flow Protocol.
+
     Nodes submit their stake to the public addNodeInfo function
     during the staking auction phase.
+
     This records their info and committed tokens. They also will get a Node
     Object that they can use to stake, unstake, and withdraw rewards.
+
     Each node has multiple token buckets that hold their tokens
     based on their status: committed, staked, unstaking, unstaked, and rewarded.
+
     Delegators can also register to delegate FLOW to a node operator
     during the staking auction phase by using the registerNewDelegator() function.
     They have the same token buckets that node operators do.
+
     The Admin has the authority to remove node records,
     refund insufficiently staked nodes, pay rewards,
     and move tokens between buckets. These will happen once every epoch.
+
     See additional staking documentation here: https://docs.onflow.org/staking/
-*/
+
+ */
 
 import FungibleToken from "../FungibleToken.cdc"
 import FlowToken from "../FlowToken.cdc"
 import FlowFees from "../FlowFees.cdc"
 import Crypto
-
 
 pub contract FlowIDTableStaking {
 
@@ -114,6 +122,7 @@ pub contract FlowIDTableStaking {
         pub(set) var stakingKey: String
 
         /// TODO: Proof of Possession (PoP) of the staking private key
+
         /// The total tokens that only this node currently has staked, not including delegators
         /// This value must always be above the minimum requirement to stay staked or accept delegators
         pub var tokensStaked: @FlowToken.Vault
@@ -176,6 +185,7 @@ pub contract FlowIDTableStaking {
             )
 
             // TODO: Verify the provided Proof of Possession of the staking private key
+
             self.id = id
             self.role = role
             self.networkingAddress = networkingAddress

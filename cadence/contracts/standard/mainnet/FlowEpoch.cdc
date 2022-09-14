@@ -39,6 +39,7 @@ import FlowFees from "../FlowFees.cdc"
 // epoch. A failure to enter this phase before transitioning to the next epoch
 // indicates that the participants in the next epoch failed to complete the set up
 // procedure, which is a critical failure and will cause the chain to halt.
+
 pub contract FlowEpoch {
 
     pub enum EpochPhase: UInt8 {
@@ -230,8 +231,10 @@ pub contract FlowEpoch {
 
     /// Metadata that is managed by the smart contract
     /// and cannot be changed by the Admin
+
     /// Contains a historical record of the metadata from all previous epochs
     /// indexed by epoch number
+
     /// Returns the metadata from the specified epoch
     /// or nil if it isn't found
     /// Epoch Metadata is stored in account storage so the growing dictionary
