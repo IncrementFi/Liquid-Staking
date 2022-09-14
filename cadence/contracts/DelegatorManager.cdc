@@ -300,9 +300,6 @@ pub contract DelegatorManager {
         // Check if approved nodes is stakable
         self.filterApprovedNodeListOnEpochStart()
 
-        // Compound rewards that collected this epoch
-        self.compoundRewards()
-
         // Re-commit slashed tokens
         self.restakeSlashedTokens()
 
@@ -314,6 +311,9 @@ pub contract DelegatorManager {
 
         // Finally, start the new quote epoch
         self.quoteEpochCounter = FlowEpoch.currentEpochCounter
+
+        // Compound rewards that collected this epoch
+        self.compoundRewards()
 
         emit NewQuoteEpoch(epoch: self.quoteEpochCounter)
     }

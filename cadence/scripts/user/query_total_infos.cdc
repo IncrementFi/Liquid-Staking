@@ -35,7 +35,7 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
     // migrate info
     var lockedTokensUsed = 0.0
     var unlockedTokensUsed = 0.0
-    var migratedInfos: [AnyStruct]? = nil
+    var migratedInfos: [AnyStruct] = []
     if userAddr != nil {
         let stakingCollectionRef = getAccount(userAddr!).getCapability<&{FlowStakingCollection.StakingCollectionPublic}>(FlowStakingCollection.StakingCollectionPublicPath).borrow()
         if stakingCollectionRef != nil {
