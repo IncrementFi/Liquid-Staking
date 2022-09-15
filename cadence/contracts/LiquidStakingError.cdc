@@ -10,7 +10,7 @@ pub contract LiquidStakingError {
     pub enum ErrorCode: UInt8 {
         pub case NO_ERROR
         pub case INVALID_PARAMETERS
-        pub case REWARD_HAS_NOT_BEEN_PAID
+        pub case STAKING_REWARD_NOT_PAID
         pub case EXCEED_STAKE_CAP
         pub case STAKE_NOT_OPEN
         pub case UNSTAKE_NOT_OPEN

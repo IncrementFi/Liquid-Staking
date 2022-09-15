@@ -28,6 +28,15 @@ pub contract LiquidStakingConfig {
     pub var quickUnstakeFee: UFix64
     /// Fee of each epoch reward
     pub var rewardFee: UFix64
+
+    /// Scale factor applied to fixed point number calculation.
+    /// Note: The use of scale factor is due to fixed point number in cadence is only precise to 1e-8:
+    /// https://docs.onflow.org/cadence/language/values-and-types/#fixed-point-numbers
+    pub let scaleFactor: UInt256
+
+    /// 100_000_000.0, i.e. 1.0e8
+    pub let ufixScale: UFix64
+    
     
     // events
     pub event ConfigMinStakingAmount(newValue: UFix64, oldValue: UFix64)
@@ -60,6 +69,25 @@ pub contract LiquidStakingConfig {
         rewardAmount = rewardAmount - protocolCutAmount
 
         return rewardAmount    
+    }
+
+    /// Utility function to convert a UFix64 number to its scaled equivalent in UInt256 format
+    /// e.g. 184467440737.09551615 (UFix64.max) => 184467440737095516150000000000
+    ///
+    pub fun UFix64ToScaledUInt256(_ f: UFix64): UInt256 {
+        let integral = UInt256(f)
+        let fractional = f % 1.0
+        let ufixScaledInteger =  integral * UInt256(self.ufixScale) + UInt256(fractional * self.ufixScale)
+        return ufixScaledInteger * self.scaleFactor / UInt256(self.ufixScale)
+    }
+    
+    /// Utility function to convert a fixed point number in form of scaled UInt256 back to UFix64 format
+    /// e.g. 184467440737095516150000000000 => 184467440737.09551615
+    ///
+    pub fun ScaledUInt256ToUFix64(_ scaled: UInt256): UFix64 {
+        let integral = scaled / self.scaleFactor
+        let ufixScaledFractional = (scaled % self.scaleFactor) * UInt256(self.ufixScale) / self.scaleFactor
+        return UFix64(integral) + (UFix64(ufixScaledFractional) / self.ufixScale)
     }
 
     /// Config Admin
@@ -122,10 +150,14 @@ pub contract LiquidStakingConfig {
         self.rewardFee = 0.1
         self.windowSizeBeforeStakingEnd = 2500  // 2500 block views, about 1 hour
 
-
         self.isStakingPaused = false
         self.isUnstakingPaused = false
         self.isMigratingPaused = false
+
+        /// 1e18
+        self.scaleFactor = 1_000_000_000_000_000_000
+        /// 1.0e8
+        self.ufixScale = 100_000_000.0
         
         self._reservedFields = {}
 

@@ -49,8 +49,8 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
         "CurrentEpoch": DelegatorManager.quoteEpochCounter,
         "CurrentUnstakeEpoch": unlockEpoch,
 
-        "stFlowFlow": currentSnapshot.quoteStFlowFlow,
-        "FlowStFlow": currentSnapshot.quoteFlowStFlow,
+        "stFlowFlow": currentSnapshot.scaledQuoteStFlowFlow,
+        "FlowStFlow": currentSnapshot.scaledQuoteFlowStFlow,
         
         "TotalStaked": DelegatorManager.getTotalValidStakingAmount(),
         "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() * FlowIDTableStaking.getRewardCutPercentage(),

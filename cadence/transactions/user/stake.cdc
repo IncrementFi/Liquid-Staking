@@ -9,7 +9,8 @@ transaction(flowAmount: UFix64) {
         let inVault <- flowVault.withdraw(amount: flowAmount) as! @FlowToken.Vault
         
         let outVault <- LiquidStaking.stake(flowVault: <-inVault)
-        
+        // TODO delete
+        // destroy userAccount.load<@AnyResource>(from: stFlowToken.tokenVaultPath)
         var stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
         if stFlowVaultRef == nil {
             userAccount.save(<- stFlowToken.createEmptyVault(), to: stFlowToken.tokenVaultPath)

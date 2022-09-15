@@ -279,9 +279,12 @@ pub contract LiquidStaking {
     ///
     pub fun calcStFlowFromFlow(flowAmount: UFix64): UFix64 {
         let currentEpochSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
-        let flowPrice = currentEpochSnapshot.quoteFlowStFlow
+        let scaledFlowPrice = currentEpochSnapshot.scaledQuoteFlowStFlow
+        let scaledFlowAmount = LiquidStakingConfig.UFix64ToScaledUInt256(flowAmount)
         
-        let stFlowAmount = flowPrice * flowAmount
+        let stFlowAmount = LiquidStakingConfig.ScaledUInt256ToUFix64(
+            scaledFlowPrice * scaledFlowAmount / LiquidStakingConfig.scaleFactor
+        )
         return stFlowAmount
     }
 
@@ -289,9 +292,12 @@ pub contract LiquidStaking {
     ///
     pub fun calcFlowFromStFlow(stFlowAmount: UFix64): UFix64 {
         let currentEpochSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
-        let stFlowPrice = currentEpochSnapshot.quoteStFlowFlow
+        let scaledStFlowPrice = currentEpochSnapshot.scaledQuoteStFlowFlow
+        let scaledStFlowAmount = LiquidStakingConfig.UFix64ToScaledUInt256(stFlowAmount)
 
-        let flowAmount = stFlowPrice * stFlowAmount
+        let flowAmount = LiquidStakingConfig.ScaledUInt256ToUFix64(
+            scaledStFlowPrice * scaledStFlowAmount / LiquidStakingConfig.scaleFactor
+        )
         return flowAmount
     }
 

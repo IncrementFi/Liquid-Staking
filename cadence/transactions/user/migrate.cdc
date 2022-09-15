@@ -14,12 +14,28 @@ transaction(nodeID: String, delegatorID: UInt32) {
         let migratedDelegator <- stakingCollectionRef.removeDelegator(nodeID: nodeID, delegatorID: delegatorID)!
 
         var delegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: migratedDelegator.nodeID, delegatorID: migratedDelegator.id)
+
+        var stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
+        if stFlowVaultRef == nil {
+            userAccount.save(<- stFlowToken.createEmptyVault(), to: stFlowToken.tokenVaultPath)
+            userAccount.unlink(stFlowToken.tokenReceiverPath)
+            userAccount.unlink(stFlowToken.tokenBalancePath)
+            userAccount.link<&stFlowToken.Vault{FungibleToken.Receiver}>(stFlowToken.tokenReceiverPath, target: stFlowToken.tokenVaultPath)
+            userAccount.link<&stFlowToken.Vault{FungibleToken.Balance}>(stFlowToken.tokenBalancePath, target: stFlowToken.tokenVaultPath)
+
+            stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
+        }
+
         
         if delegatroInfo.tokensCommitted > 0.0 {
             migratedDelegator.requestUnstaking(amount: delegatroInfo.tokensCommitted)
             let committedVault <- migratedDelegator.withdrawUnstakedTokens(amount: delegatroInfo.tokensCommitted)
-            flowVault.deposit(from: <-committedVault)
+            // compound stake
+            let committedStFlowVault <- LiquidStaking.stake(flowVault: <-(committedVault as! @FlowToken.Vault))
+            
+            stFlowVaultRef!.deposit(from: <-committedStFlowVault)
         }
+
         if delegatroInfo.tokensRequestedToUnstake > 0.0 {
             migratedDelegator.delegateUnstakedTokens(amount: delegatroInfo.tokensRequestedToUnstake)
         }
@@ -46,15 +62,6 @@ transaction(nodeID: String, delegatorID: UInt32) {
             destroy migratedDelegator
         } else {
             let outVault <- LiquidStaking.migrate(delegator: <-migratedDelegator)
-
-            var stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
-            if stFlowVaultRef == nil {
-                userAccount.save(<- stFlowToken.createEmptyVault(), to: stFlowToken.tokenVaultPath)
-                userAccount.link<&stFlowToken.Vault{FungibleToken.Receiver}>(stFlowToken.tokenReceiverPath, target: stFlowToken.tokenVaultPath)
-                userAccount.link<&stFlowToken.Vault{FungibleToken.Balance}>(stFlowToken.tokenBalancePath, target: stFlowToken.tokenVaultPath)
-
-                stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
-            }
 
             stFlowVaultRef!.deposit(from: <-outVault)
         }

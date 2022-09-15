@@ -98,9 +98,9 @@ pub contract DelegatorManager {
         pub let snapshotEpochCounter: UInt64
 
         /// Price: stFlow to Flow (>= 1.0)
-        pub var quoteStFlowFlow: UFix64
+        pub var scaledQuoteStFlowFlow: UInt256
         /// Price: Flow to stFlow (<= 1.0)
-        pub var quoteFlowStFlow: UFix64
+        pub var scaledQuoteFlowStFlow: UInt256
         
         /// Total staked amount of all delegators
         pub var allDelegatorStaked: UFix64
@@ -255,9 +255,9 @@ pub contract DelegatorManager {
         }
 
         ///
-        access(contract) fun setStflowPrice(stFlowToFlow: UFix64, flowToStFlow: UFix64) {
-            self.quoteStFlowFlow = stFlowToFlow
-            self.quoteFlowStFlow = flowToStFlow
+        access(contract) fun setStflowPrice(stFlowToFlow: UInt256, flowToStFlow: UInt256) {
+            self.scaledQuoteStFlowFlow = stFlowToFlow
+            self.scaledQuoteFlowStFlow = flowToStFlow
         }
 
         init(epochCounter: UInt64) {
@@ -270,8 +270,8 @@ pub contract DelegatorManager {
             self.receivedReward = 0.0
             self.futureReward = 0.0
 
-            self.quoteStFlowFlow = 1.0
-            self.quoteFlowStFlow = 1.0
+            self.scaledQuoteStFlowFlow = LiquidStakingConfig.UFix64ToScaledUInt256(1.0)
+            self.scaledQuoteFlowStFlow = LiquidStakingConfig.UFix64ToScaledUInt256(1.0)
 
             self.delegatorInfoDict = {}
 
@@ -345,14 +345,17 @@ pub contract DelegatorManager {
         let flowSupply = currentReward + totalCommitted + totalStaked
         let stFlowSupply = stFlowToken.totalSupply
 
-        var stFlow_Flow = 0.0
-        var Flow_stFlow = 0.0
+        var stFlow_Flow: UInt256 = 0
+        var Flow_stFlow: UInt256 = 0
         if flowSupply == 0.0 || stFlowSupply == 0.0 {
-            stFlow_Flow = 1.0
-            Flow_stFlow = 1.0
+            stFlow_Flow = LiquidStakingConfig.UFix64ToScaledUInt256(1.0)
+            Flow_stFlow = LiquidStakingConfig.UFix64ToScaledUInt256(1.0)
         } else {
-            stFlow_Flow = flowSupply / stFlowSupply
-            Flow_stFlow = stFlowSupply / flowSupply
+            let scaledFlowSupply = LiquidStakingConfig.UFix64ToScaledUInt256(flowSupply)
+            let scaledStFlowSupply = LiquidStakingConfig.UFix64ToScaledUInt256(stFlowSupply)
+
+            stFlow_Flow = scaledFlowSupply * LiquidStakingConfig.scaleFactor / scaledStFlowSupply
+            Flow_stFlow = scaledStFlowSupply * LiquidStakingConfig.scaleFactor / scaledFlowSupply
         }
         
         newEpochSnapshot.setStflowPrice(stFlowToFlow: stFlow_Flow, flowToStFlow: Flow_stFlow)
@@ -527,7 +530,7 @@ pub contract DelegatorManager {
                     FlowEpoch.getEpochMetadata(self.quoteEpochCounter)!.rewardsPaid == true, message:
                         LiquidStakingError.ErrorEncode(
                             msg: "Flow has not paid the reward yet at epoch ".concat(self.quoteEpochCounter.toString()),
-                            err: LiquidStakingError.ErrorCode.REWARD_HAS_NOT_BEEN_PAID
+                            err: LiquidStakingError.ErrorCode.STAKING_REWARD_NOT_PAID
                         )
                 )
             }
