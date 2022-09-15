@@ -17,6 +17,7 @@ pub fun main(): AnyStruct {
         "Cur Block view": getCurrentBlock().view,
         "Cur Block height": getCurrentBlock().height,
         "Epoch State": curEpochPhase,
+        "auto paid?": FlowEpoch.automaticRewardsEnabled(),
         "CurrentMetadata": FlowEpoch.getEpochMetadata(curEpochCounter)
     }
 }

@@ -366,7 +366,7 @@ pub contract DelegatorManager {
         // To default stake node
         var reservedDelegator = self.createorborrowApprovedDelegator(nodeID: self.reservedNodeIDToStake)
 
-        // Delegate flow tokens
+        // Stake to committed 
         reservedDelegator.delegateNewTokens(from: <-flowVault)
 
         // Update snapshot
@@ -726,14 +726,15 @@ pub contract DelegatorManager {
         self.reservedProtocolVault.deposit(from: <-flowVault)
     }
 
-    /// Valid staking = backed by stFlowTokens
+    /// Valid staking = flowTokens backed by stFlowTokens
     ///
     pub fun getTotalValidStakingAmount(): UFix64 {
         let currentEpochSnapshot = self.borrowCurrentEpochSnapshot()
-        let totalValidStakingAmount = 
-            (currentEpochSnapshot.allDelegatorStaked + currentEpochSnapshot.allDelegatorCommitted + self.totalRewardedVault.balance)
-            -
-            (self.reservedRequestedToUnstakeAmount + currentEpochSnapshot.allDelegatorRequestedToUnstake)
+        let totalValidStakingAmount = currentEpochSnapshot.allDelegatorStaked 
+                                        + currentEpochSnapshot.allDelegatorCommitted 
+                                        + self.totalRewardedVault.balance
+                                        - self.reservedRequestedToUnstakeAmount
+                                        - currentEpochSnapshot.allDelegatorRequestedToUnstake
         return totalValidStakingAmount
     }
 

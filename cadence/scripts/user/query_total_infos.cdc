@@ -71,6 +71,8 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
                 "unlockedTokensUsed": unlockedTokensUsed,
                 "migratedInfos": migratedInfos
             }
-        }
+        },
+
+        "MinStakingAmount": LiquidStakingConfig.minStakingAmount
     }
 }
