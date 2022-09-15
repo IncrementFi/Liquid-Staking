@@ -13,11 +13,13 @@ pub fun main(): AnyStruct {
         "System Totoal stated:": FlowIDTableStaking.getTotalStaked(),
         //"Total delegator tokens:": FlowIDTableStaking.
         "Cur reward:": FlowIDTableStaking.getEpochTokenPayout(),
+        "Reward cut": FlowIDTableStaking.getRewardCutPercentage(),
         "Cur epoch": curEpochCounter, 
         "Cur Block view": getCurrentBlock().view,
         "Cur Block height": getCurrentBlock().height,
         "Epoch State": curEpochPhase,
         "auto paid?": FlowEpoch.automaticRewardsEnabled(),
+        "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() / 7.0 * 365.0 * (1.0 - FlowIDTableStaking.getRewardCutPercentage()),
         "CurrentMetadata": FlowEpoch.getEpochMetadata(curEpochCounter)
     }
 }

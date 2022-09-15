@@ -53,7 +53,7 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
         "FlowStFlow": currentSnapshot.scaledQuoteFlowStFlow,
         
         "TotalStaked": DelegatorManager.getTotalValidStakingAmount(),
-        "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() * FlowIDTableStaking.getRewardCutPercentage(),
+        "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() / 7.0 * 365.0 * (1.0 - FlowIDTableStaking.getRewardCutPercentage()),
 
         "EpochMetadata": {
             "StartView": showEpochMetadata.startView,
