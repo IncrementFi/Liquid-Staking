@@ -1,5 +1,5 @@
 {
-    "Network": "emulator",
+    "Network": "testnet",
     "AccessNodeType": "grpc",
     "AccessNode": {
         "emulator": "http://localhost:8080",
@@ -13,7 +13,7 @@
     "HttpProxy": true,
 
     "BotConfig": {
-        "collectionBatchSize": 2,
-        "queryDelegatorInfoBatchSize": 2
+        "collectionBatchSize": 10,
+        "queryDelegatorInfoBatchSize": 50
     }
 }
