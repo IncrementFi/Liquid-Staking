@@ -8,6 +8,7 @@ pub fun main(): {String: AnyStruct} {
     let currentSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
     
     return {
+        "stFlow total supply": stFlowToken.totalSupply,
         "reserved request unstake tokens:": DelegatorManager.reservedRequestedToUnstakeAmount,
         "Reserved Flow": DelegatorManager.getProtocolReservedVaultBalance(),
         "Unstaked vault": DelegatorManager.getTotalUnstakedVaultBalance(),

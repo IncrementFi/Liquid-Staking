@@ -822,6 +822,14 @@ pub contract DelegatorManager {
     }
 
     ///
+    pub fun getApprovedDelegatorInfoByNodeID(nodeID: String): FlowIDTableStaking.DelegatorInfo {
+        let delegator = self.borrowDelegator(uuid: self.approvedDelegatorIDs[nodeID]!)!
+        let nodeID = delegator.nodeID
+        let delegatorID = delegator.id
+        return FlowIDTableStaking.DelegatorInfo(nodeID: nodeID, delegatorID: delegatorID)
+    }
+
+    ///
     pub fun getSlicedDelegatorUUIDList(from: Int, to: Int): [UInt64] {
         let UUIDs = self.allDelegators.keys
         var upTo = to
@@ -834,6 +842,11 @@ pub contract DelegatorManager {
     ///
     pub fun getTotalUnstakedVaultBalance(): UFix64 {
         return self.totalUnstakedVault.balance
+    }
+
+    ///
+    pub fun getDelegatorsLength(): Int {
+        return self.allDelegators.keys.length
     }
 
     /// Bot

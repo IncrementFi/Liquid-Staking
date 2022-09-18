@@ -59,7 +59,7 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
             "StartView": showEpochMetadata.startView,
             "StartTimestamp": currentSnapshot.quoteEpochStartTimestamp,
             "EndView": showEpochMetadata.endView,
-            "CurrentView": currentBlockView,
+            "CurrentView": currentBlockView,  // TODO 这里需要加上window
             "CurrentTimestamp": getCurrentBlock().timestamp,
             "StakingEndView": showEpochMetadata.stakingEndView
         },

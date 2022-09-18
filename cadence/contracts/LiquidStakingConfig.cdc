@@ -145,7 +145,7 @@ pub contract LiquidStakingConfig {
 
     init() {
         self.minStakingAmount = 0.1
-        self.stakingCap = 500.0
+        self.stakingCap = 100_000.0
         self.quickUnstakeFee = 0.003
         self.rewardFee = 0.1
         self.windowSizeBeforeStakingEnd = 2500  // 2500 block views, about 1 hour

@@ -10,5 +10,10 @@
         }
     },
         
-    "HttpProxy": true
+    "HttpProxy": true,
+
+    "BotConfig": {
+        "collectionBatchSize": 2,
+        "queryDelegatorInfoBatchSize": 2
+    }
 }
