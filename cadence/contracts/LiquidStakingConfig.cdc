@@ -26,8 +26,6 @@ pub contract LiquidStakingConfig {
 
     /// Fee of quick unstaking from reserved committed vault
     pub var quickUnstakeFee: UFix64
-    /// Fee of each epoch reward
-    pub var rewardFee: UFix64
 
     /// Scale factor applied to fixed point number calculation.
     /// Note: The use of scale factor is due to fixed point number in cadence is only precise to 1e-8:
@@ -37,6 +35,8 @@ pub contract LiquidStakingConfig {
     /// 100_000_000.0, i.e. 1.0e8
     pub let ufixScale: UFix64
     
+    /// Cut of staking interests reserved as protocol fees
+    pub var protocolFee: UFix64
     
     // events
     pub event ConfigMinStakingAmount(newValue: UFix64, oldValue: UFix64)
@@ -45,7 +45,7 @@ pub contract LiquidStakingConfig {
     pub event ConfigUnstakingPause(newValue: Bool, oldValue: Bool)
     pub event ConfigMigratingPause(newValue: Bool, oldValue: Bool)
     pub event ConfigQuickUnstakeFee(newValue: UFix64, oldValue: UFix64)
-    pub event ConfigRewardFee(newValue: UFix64, oldValue: UFix64)
+    pub event ConfigProtocolFee(newValue: UFix64, oldValue: UFix64)
     pub event ConfigWindowSize(newValue: UInt64, oldValue: UInt64)
 
     /// Reserved parameter fields: {ParamName: Value}
@@ -65,7 +65,7 @@ pub contract LiquidStakingConfig {
 
         rewardAmount = rewardAmount - nodeCutAmount
 
-        let protocolCutAmount = rewardAmount * self.rewardFee
+        let protocolCutAmount = rewardAmount * self.protocolFee
         rewardAmount = rewardAmount - protocolCutAmount
 
         return rewardAmount    
@@ -112,12 +112,12 @@ pub contract LiquidStakingConfig {
             LiquidStakingConfig.quickUnstakeFee = quickUnstakeFee
         }
 
-        pub fun setRewardFee(rewardFee: UFix64) {
+        pub fun setProtocolFee(protocolFee: UFix64) {
             pre {
-                rewardFee < 1.0: "Invalid reward fee"
+                protocolFee < 1.0: "Invalid protocol fee"
             }
-            emit ConfigRewardFee(newValue: rewardFee, oldValue: LiquidStakingConfig.quickUnstakeFee)
-            LiquidStakingConfig.rewardFee = rewardFee
+            emit ConfigProtocolFee(newValue: protocolFee, oldValue: LiquidStakingConfig.protocolFee)
+            LiquidStakingConfig.protocolFee = protocolFee
         }
 
         pub fun setPause(stakingPause: Bool, unstakingPause: Bool, migratingPause: Bool) {
@@ -142,12 +142,11 @@ pub contract LiquidStakingConfig {
         }
     }
 
-
     init() {
         self.minStakingAmount = 0.1
         self.stakingCap = 100_000.0
         self.quickUnstakeFee = 0.003
-        self.rewardFee = 0.1
+        self.protocolFee = 0.1
         self.windowSizeBeforeStakingEnd = 2500  // 2500 block views, about 1 hour
 
         self.isStakingPaused = false

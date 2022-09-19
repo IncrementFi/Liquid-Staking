@@ -9,11 +9,11 @@ pub fun main(): AnyStruct {
         "QuoteEpoch": DelegatorManager.quoteEpochCounter,
         "FlowEpoch": FlowEpoch.currentEpochCounter,
         "DelegatorLength": DelegatorManager.getDelegatorsLength(),
-        "UnprocessedUnstakeRequests": DelegatorManager.reservedRequestedToUnstakeAmount,
+        "UnprocessedUnstakeRequests": DelegatorManager.requestedToUnstake,
         "WindowSizeBeforeStakingEnd": LiquidStakingConfig.windowSizeBeforeStakingEnd,
         "CurrentView": getCurrentBlock().view,
-        "ReservedNodeID": DelegatorManager.reservedNodeIDToStake,
-        "ReservedCommittedAmount": DelegatorManager.getApprovedDelegatorInfoByNodeID(nodeID: DelegatorManager.reservedNodeIDToStake).tokensCommitted,
-        "TotalCommitted": DelegatorManager.borrowQuoteEpochSnapshot().allDelegatorCommitted
+        "DefaultNodeID": DelegatorManager.defaultNodeIDToStake,
+        "DefaultDelegatorCommitted": DelegatorManager.getApprovedDelegatorInfoByNodeID(nodeID: DelegatorManager.defaultNodeIDToStake).tokensCommitted,
+        "TotalCommitted": DelegatorManager.borrowCurrentEpochSnapshot().allDelegatorCommitted
     }
 }

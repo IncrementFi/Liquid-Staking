@@ -24,7 +24,4 @@ pub contract LiquidStakingError {
         return "[IncLiquidStakingErrorMsg:".concat(msg).concat("]").concat(
                "[IncLiquidStakingErrorCode:").concat(err.rawValue.toString()).concat("]")
     }
-
-    init() {
-    }
 }

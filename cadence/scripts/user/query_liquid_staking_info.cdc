@@ -9,8 +9,8 @@ pub fun main(): {String: AnyStruct} {
     
     return {
         "stFlow total supply": stFlowToken.totalSupply,
-        "reserved request unstake tokens:": DelegatorManager.reservedRequestedToUnstakeAmount,
-        "Reserved Flow": DelegatorManager.getProtocolReservedVaultBalance(),
+        "Unprocessed unstake request": DelegatorManager.requestedToUnstake,
+        "Protocol fees": DelegatorManager.getProtocolFeeBalance(),
         "Unstaked vault": DelegatorManager.getTotalUnstakedVaultBalance(),
         "snapshot": currentSnapshot
     }

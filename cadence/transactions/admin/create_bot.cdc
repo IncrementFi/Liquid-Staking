@@ -5,8 +5,9 @@ transaction() {
         log("---------> node: set approved list")
         let adminRef = nodeMgrAcct.borrow<&DelegatorManager.Admin>(from: DelegatorManager.adminPath)!
         
-        let bot <- adminRef.createBot()
-        
+        let bot <- adminRef.createStrategy()
+
+        // TODO: path
         nodeMgrAcct.save(<-bot, to: /storage/liquidStakingBot)
     }
 }

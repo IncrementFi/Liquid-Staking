@@ -148,7 +148,7 @@ pub contract LiquidStaking {
         
         // Fast unstake fee
         let feeVault <- flowVault.withdraw(amount: LiquidStakingConfig.quickUnstakeFee * flowAmountToUnstake)
-        DelegatorManager.depositProtocolReservedVault(flowVault: <-feeVault, purpose: "unstake fee")
+        DelegatorManager.depositToProtocolFees(flowVault: <-feeVault, purpose: "fast unstake fee")
         
         // Burn stFlow
         stFlowToken.burnTokens(from: <-stFlowVault)
@@ -307,4 +307,3 @@ pub contract LiquidStaking {
         self._reservedFields = {}
     }
 }
- 
