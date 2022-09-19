@@ -1034,6 +1034,7 @@ pub contract DelegatorManager {
             delegator.requestUnstaking(amount: unstakeAmount)
             
             // 
+            DelegatorManager.borrowCurrentEpochSnapshot().addRedelegatedTokensToRequestUnstake(amount: unstakeAmount)
             DelegatorManager.borrowCurrentEpochSnapshot().upsertDelegatorInfo(nodeID: delegator.nodeID, delegatorID: delegator.id)
             
             emit Redelegate(nodeID: nodeID, delegatorID: delegatorID, unstakeAmount: unstakeAmount)
