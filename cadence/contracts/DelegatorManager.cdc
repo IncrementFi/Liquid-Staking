@@ -306,15 +306,15 @@ pub contract DelegatorManager {
         // Re-commit redelegated tokens
         self.redelegateTokens()
 
+        // Compound rewards that collected this epoch
+        self.compoundRewards()
+
         // Calculate stFlow price for this epoch
         self.stFlowQuote()
 
         // Finally, start the new quote epoch
         self.quoteEpochCounter = FlowEpoch.currentEpochCounter
-
-        // Compound rewards that collected this epoch
-        self.compoundRewards()
-
+        
         emit NewQuoteEpoch(epoch: self.quoteEpochCounter)
     }
 
@@ -732,7 +732,7 @@ pub contract DelegatorManager {
     /// Valid staking = flowTokens backed by stFlowTokens
     ///
     pub fun getTotalValidStakingAmount(): UFix64 {
-        let currentEpochSnapshot = self.borrowCurrentEpochSnapshot()
+        let currentEpochSnapshot = self.borrowQuoteEpochSnapshot()
         let totalValidStakingAmount = currentEpochSnapshot.allDelegatorStaked 
                                         + currentEpochSnapshot.allDelegatorCommitted 
                                         + self.totalRewardedVault.balance
@@ -748,6 +748,11 @@ pub contract DelegatorManager {
 
     ///
     pub fun borrowCurrentEpochSnapshot(): &EpochSnapshot {
+        return self.borrowEpochSnapshot(at: FlowEpoch.currentEpochCounter)
+    }
+
+    ///
+    pub fun borrowQuoteEpochSnapshot():  &EpochSnapshot {
         return self.borrowEpochSnapshot(at: self.quoteEpochCounter)
     }
 
