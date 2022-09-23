@@ -7,7 +7,7 @@ transaction() {
         
         let bot <- adminRef.createStrategy()
 
-        // TODO: path
+        // TODO: no hardcode path
         nodeMgrAcct.save(<-bot, to: /storage/liquidStakingBot)
     }
 }

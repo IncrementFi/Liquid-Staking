@@ -8,7 +8,7 @@ pub fun main(userAddr: Address): {String: AnyStruct} {
     let flowBalance = getAccount(userAddr).getCapability<&{FungibleToken.Balance}>(/public/flowTokenBalance).borrow()!.balance
     let stFlowBalance = getAccount(userAddr).getCapability<&{FungibleToken.Balance}>(/public/stFlowTokenBalance).borrow()!.balance
 
-    let voucherCollectionRef = getAccount(userAddr).getCapability<&{LiquidStaking.UnstakingVoucherCollectionPublic}>(LiquidStaking.UnstakingVoucherCollectionPublicPath).borrow()
+    let voucherCollectionRef = getAccount(userAddr).getCapability<&{LiquidStaking.WithdrawVoucherCollectionPublic}>(LiquidStaking.WithdrawVoucherCollectionPublicPath).borrow()
     var voucherInfos: [AnyStruct]? = nil
     if voucherCollectionRef != nil {
         voucherInfos = voucherCollectionRef!.getVoucherInfos()
@@ -24,7 +24,6 @@ pub fun main(userAddr: Address): {String: AnyStruct} {
         unlockedTokensUsed = stakingCollectionRef!.unlockedTokensUsed
     }
 
-    //let usdcBalance = getAccount(userAddr).getCapability<&{FungibleToken.Balance}>(/public/USDCVaultBalance).borrow()!.balance
     return {
         "Flow": flowBalance,
         "stFlow": stFlowBalance,

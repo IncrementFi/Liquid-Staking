@@ -1,3 +1,14 @@
+/**
+
+    $stFlow is a fungible token used in the liquid staking protocol, fully backed by underlying $flow
+    $stFlow is a liquid (transferrable), interest-bearing (staking rewards are restaked in each epoch, and thus auto-compounding)
+    $stFlow's price grows after each flowchain's epoch advancement
+    $stFlow can be redeemed back to $flow *instantly* through dex; or it can also undergo normal unstaking process but that would take several epochs
+    $stFlow can be widely used in flowchain's DeFi ecosystems
+
+    @Author: Increment Labs
+*/
+
 import FungibleToken from "./standard/FungibleToken.cdc"
 
 pub contract stFlowToken: FungibleToken {
@@ -102,7 +113,10 @@ pub contract stFlowToken: FungibleToken {
 
     // Mint tokens
     //
-    // stFlow token will be mint only when the user stake flow tokens into liquid staking
+    // $stFlow token can only be minted when:
+    //   - user stakes unlocked $flow tokens, or
+    //   - user migrates existing (staked) NodeDelegator resource
+    // into the liquid staking protocol
     //
     access(account) fun mintTokens(amount: UFix64): @stFlowToken.Vault {
         pre {
@@ -118,9 +132,8 @@ pub contract stFlowToken: FungibleToken {
     
     // Burn tokens
     //
-    // stFlow token will be burned when the user unstake flow tokens from liquid staking
-    // Note: the burned tokens are automatically subtracted from the 
-    // total supply in the Vault destructor.    
+    // $stFlow token will be burned in exchange for underlying $flow when user requests unstake from the liquid staking protocol
+    // Note: the burned tokens are automatically subtracted from the total supply in the Vault destructor.
     //
     access(account) fun burnTokens(from: @FungibleToken.Vault) {
         let vault <- from as! @stFlowToken.Vault

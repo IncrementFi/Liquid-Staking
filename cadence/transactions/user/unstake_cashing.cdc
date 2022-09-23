@@ -5,10 +5,10 @@ import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
 
 transaction(uuid: UInt64) {
     prepare(userAccount: AuthAccount) {
-        var voucherCollection = userAccount.borrow<&LiquidStaking.UnstakingVoucherCollection>(from: LiquidStaking.UnstakingVoucherCollectionPath)!
+        var voucherCollection = userAccount.borrow<&LiquidStaking.WithdrawVoucherCollection>(from: LiquidStaking.WithdrawVoucherCollectionPath)!
         let voucher <-voucherCollection.withdraw(uuid: uuid)
 
-        let flowVault <- LiquidStaking.cashingUnstakingVoucher(voucher: <-voucher)
+        let flowVault <- LiquidStaking.cashoutWithdrawVoucher(voucher: <-voucher)
         log("--> cashing voucher")
         log("--> get flow: ".concat(flowVault.balance.toString()))
 

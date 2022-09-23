@@ -5,6 +5,6 @@ transaction(fromNode: String, toNode: String, amount: UFix64) {
         log("---------> move committed")
         let bot = botAcct.borrow<&DelegatorManager.DelegationStrategy>(from: /storage/liquidStakingBot)!
         
-        bot.transferCommittedTokens(fromNodeID: fromNode, toNodeID: toNode, transferAmount: amount)
+        bot.transferCommittedTokens(fromNodeID: fromNode, toNodeID: toNode, amount: amount)
     }
 }

@@ -26,7 +26,7 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
     // voucher
     var voucherInfos: [AnyStruct]? = nil
     if userAddr != nil {
-        let voucherCollectionRef = getAccount(userAddr!).getCapability<&{LiquidStaking.UnstakingVoucherCollectionPublic}>(LiquidStaking.UnstakingVoucherCollectionPublicPath).borrow()
+        let voucherCollectionRef = getAccount(userAddr!).getCapability<&{LiquidStaking.WithdrawVoucherCollectionPublic}>(LiquidStaking.WithdrawVoucherCollectionPublicPath).borrow()
         if voucherCollectionRef != nil {
             voucherInfos = voucherCollectionRef!.getVoucherInfos()
         }
@@ -51,15 +51,15 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
 
         "stFlowFlow": currentSnapshot.scaledQuoteStFlowFlow,
         "FlowStFlow": currentSnapshot.scaledQuoteFlowStFlow,
-        
+
         "TotalStaked": DelegatorManager.getTotalValidStakingAmount(),
-        "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() / 7.0 * 365.0 * (1.0 - FlowIDTableStaking.getRewardCutPercentage()),  // TODO: use APY
+        "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() / 7.0 * 365.0 * (1.0 - FlowIDTableStaking.getRewardCutPercentage()),
 
         "EpochMetadata": {
             "StartView": showEpochMetadata.startView,
             "StartTimestamp": currentSnapshot.quoteEpochStartTimestamp,
             "EndView": showEpochMetadata.endView,
-            "CurrentView": currentBlockView,  // TODO 这里需要加上window
+            "CurrentView": currentBlockView,
             "CurrentTimestamp": getCurrentBlock().timestamp,
             "StakingEndView": showEpochMetadata.stakingEndView
         },

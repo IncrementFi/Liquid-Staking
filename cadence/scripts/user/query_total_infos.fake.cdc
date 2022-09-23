@@ -26,7 +26,7 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
     // voucher
     var voucherInfos: [AnyStruct]? = nil
     if userAddr != nil {
-        let voucherCollectionRef = getAccount(userAddr!).getCapability<&{LiquidStaking.UnstakingVoucherCollectionPublic}>(LiquidStaking.UnstakingVoucherCollectionPublicPath).borrow()
+        let voucherCollectionRef = getAccount(userAddr!).getCapability<&{LiquidStaking.WithdrawVoucherCollectionPublic}>(LiquidStaking.WithdrawVoucherCollectionPublicPath).borrow()
         if voucherCollectionRef != nil {
             voucherInfos = voucherCollectionRef!.getVoucherInfos()
         }

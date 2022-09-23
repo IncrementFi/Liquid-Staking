@@ -159,7 +159,7 @@ pub contract DelegatorManager {
             return self.delegatorCollected.length
         }
 
-        access(contract) fun collectDelegator(uuid: UInt64) {
+        access(contract) fun markDelegatorCollected(uuid: UInt64) {
             self.delegatorCollected.insert(key: uuid, true)
         }
 
@@ -250,7 +250,7 @@ pub contract DelegatorManager {
         // Re-commit redelegated tokens
         self.redelegateTokens()
 
-        // Compound rewards that collected this epoch
+        // Compound rewards collected in current protocol epoch
         self.compoundRewards()
 
         // Checkpoint stFlow price for the next epoch
@@ -280,12 +280,12 @@ pub contract DelegatorManager {
         let totalCommitted = nextEpochSnapshot.allDelegatorCommitted
 
         let totalStaked = nextEpochSnapshot.allDelegatorStaked
-                                    - self.requestedToUnstake
-                                    - nextEpochSnapshot.allDelegatorRequestedToUnstake
                                     + nextEpochSnapshot.canceledStakedTokens
                                     + nextEpochSnapshot.redelegatedTokensRequestToUnstake
                                     + nextEpochSnapshot.redelegatedTokensUnderUnstaking
-        
+                                    - self.requestedToUnstake
+                                    - nextEpochSnapshot.allDelegatorRequestedToUnstake
+
         let flowSupply = currentReward + totalCommitted + totalStaked
         let stFlowSupply = stFlowToken.totalSupply
 
@@ -304,7 +304,7 @@ pub contract DelegatorManager {
 
         nextEpochSnapshot.setStflowPrice(stFlowToFlow: stFlow_flow, flowToStFlow: flow_stFlow)
     }
-    
+
     /// Deposit flowToken to the default NodeDelegator. DelegationStrategy will redistribute to other approved nodes.
     ///
     /// Called by LiquidStaking::stake()
@@ -341,9 +341,8 @@ pub contract DelegatorManager {
 
     /// All unstaking requests are marked and will be processed before staking auction end
     ///
-    /// Called by LiquidStaking::unstakeSlowly()
+    /// Called by LiquidStaking::unstake()
     access(account) fun requestWithdrawFromStaked(amount: UFix64) {
-
         let currentEpochSnapshot = self.borrowCurrentEpochSnapshot()
         assert(
             currentEpochSnapshot.allDelegatorStaked + currentEpochSnapshot.allDelegatorCommitted
@@ -354,11 +353,6 @@ pub contract DelegatorManager {
                 err: LiquidStakingError.ErrorCode.INVALID_PARAMETERS
             )
         )
-    
-        let leftStakedTokens = currentEpochSnapshot.allDelegatorStaked
-                                + currentEpochSnapshot.allDelegatorCommitted
-                                - currentEpochSnapshot.allDelegatorRequestedToUnstake
-                                - self.requestedToUnstake
         
         // mark unstake requests
         self.requestedToUnstake = self.requestedToUnstake + amount
@@ -366,7 +360,7 @@ pub contract DelegatorManager {
 
     /// Withdraw tokens from unstaked vault
     ///
-    /// Called by LiquidStaking::cashingUnstakingVoucher()
+    /// Called by LiquidStaking::cashoutWithdrawVoucher()
     access(account) fun withdrawFromUnstaked(amount: UFix64): @FlowToken.Vault {
         return <-(self.totalUnstakedVault.withdraw(amount: amount) as! @FlowToken.Vault)
     }
@@ -538,9 +532,7 @@ pub contract DelegatorManager {
 
             // Update snapshot
             nextEpochSnapshot.upsertDelegatorInfo(nodeID: nodeID, delegatorID: delegatorID)
-
-            // Mark this delegator as collected
-            nextEpochSnapshot.collectDelegator(uuid: uuid)
+            nextEpochSnapshot.markDelegatorCollected(uuid: uuid)
 
             index = index + 1
         }
@@ -576,13 +568,13 @@ pub contract DelegatorManager {
 
         assert(
             nextEpochSnapshot.getCollectedDelegatorCount() == self.allDelegators.length,
-            message: "All delegators should have been updated"
+            message: "All delegators should have been collected"
         )
 
         // Checkpoint received reward for protocol epoch N
         if LiquidStakingConfig.protocolFee > 0.0 {
             let feeVault <- self.totalRewardedVault.withdraw(amount: self.totalRewardedVault.balance * LiquidStakingConfig.protocolFee)
-            self.depositToProtocolFees(flowVault: <-feeVault, purpose: "protocol fee")
+            self.depositToProtocolFees(flowVault: <-feeVault, purpose: "epoch reward cut -> protocol fee")
         }
         currEpochSnapshot.setReceivedReward(received: self.totalRewardedVault.balance)
 
@@ -695,11 +687,19 @@ pub contract DelegatorManager {
         self.protocolFeeVault.deposit(from: <-flowVault)
     }
 
-    /// Valid staking = flowTokens backed by stFlowTokens
+    /// Contribute additional $flow to rewardedVault for whatever reason (e.g. partnership nodes' node-cut reimbursement, donation, etc.).
+    /// This will boost $stFlow price (and also liquid staking apr) in the next epoch
+    pub fun addReward(rewardedVault: @FlowToken.Vault) {
+        self.totalRewardedVault.deposit(from: <-rewardedVault)
+    }
+
+    /// Amount of flowTokens the liquid staking protocol is fully backed by
     pub fun getTotalValidStakingAmount(): UFix64 {
         let currentEpochSnapshot = self.borrowCurrentEpochSnapshot()
         let totalValidStakingAmount = currentEpochSnapshot.allDelegatorStaked 
                                         + currentEpochSnapshot.allDelegatorCommitted 
+                                        + currentEpochSnapshot.canceledStakedTokens
+                                        + currentEpochSnapshot.redelegatedTokensUnderUnstaking
                                         + self.totalRewardedVault.balance
                                         - self.requestedToUnstake
                                         - currentEpochSnapshot.allDelegatorRequestedToUnstake
@@ -707,7 +707,7 @@ pub contract DelegatorManager {
     }
 
     pub fun borrowEpochSnapshot(at: UInt64): &EpochSnapshot {
-        return (&self.epochSnapshotHistory[at] as &EpochSnapshot?) ?? panic("EpochSnapshot index out of scope")
+        return (&self.epochSnapshotHistory[at] as &EpochSnapshot?) ?? panic("EpochSnapshot index out of range")
     }
 
     pub fun borrowCurrentEpochSnapshot(): &EpochSnapshot {
@@ -732,7 +732,7 @@ pub contract DelegatorManager {
         return self.approvedNodeIDList
     }
 
-    /// Get all approved delegator ids
+    /// Get all approved delegator uuids keyed by nodeID
     /// Up to 400 nodes, do not worry about the gas-limit
     pub fun getApprovedDelegatorIDs(): {String: UInt64} {
         return self.approvedDelegatorIDs
@@ -776,7 +776,7 @@ pub contract DelegatorManager {
         return FlowIDTableStaking.DelegatorInfo(nodeID: nodeID, delegatorID: delegatorID)
     }
 
-    // [from, to)
+    /// [from, to)
     pub fun getSlicedDelegatorUUIDList(from: Int, to: Int): [UInt64] {
         let UUIDs = self.allDelegators.keys
         var upTo = to
@@ -796,20 +796,25 @@ pub contract DelegatorManager {
 
     /// Used together with offchain strategy bots
     pub resource DelegationStrategy {
-        /// Transfer committed tokens among delegators
-        pub fun transferCommittedTokens(fromNodeID: String, toNodeID: String, transferAmount: UFix64) {
+
+        /// Transfer committed tokens among delegators.
+        /// Utilized by strategy bots to redistribute newly staked $flow to different nodes for the sake of protocol decentralization,
+        /// and also to get rid of single point of failure.
+        pub fun transferCommittedTokens(fromNodeID: String, toNodeID: String, amount: UFix64) {
             pre {
                 FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Cannot transfer comitted tokens until protocol epoch syncs"
             }
-            let fromDelegator = DelegatorManager.borrowApprovedDelegatorFromNode(fromNodeID)!
-            let toDelegator = DelegatorManager.borrowApprovedDelegatorFromNode(toNodeID)!
+            let fromDelegator = DelegatorManager.borrowApprovedDelegatorFromNode(fromNodeID)
+                ?? panic("cannot borrow from approved delegator of fromNode")
+            let toDelegator = DelegatorManager.borrowApprovedDelegatorFromNode(toNodeID)
+                ?? panic("cannot borrow from approved delegator of toNode")
             let fromDelegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: fromNodeID, delegatorID: fromDelegator.id)
-            
-            assert(fromDelegatroInfo.tokensCommitted >= transferAmount, message: "Transfer committed token is out of limit")
-            
+
+            assert(fromDelegatroInfo.tokensCommitted >= amount, message: "try to transfer more than fromNode.committed")
+
             // withdraw committed
-            fromDelegator.requestUnstaking(amount: transferAmount)
-            let transferVault <- fromDelegator.withdrawUnstakedTokens(amount: transferAmount)
+            fromDelegator.requestUnstaking(amount: amount)
+            let transferVault <- fromDelegator.withdrawUnstakedTokens(amount: amount)
 
             // deposit committed
             toDelegator.delegateNewTokens(from: <- transferVault)
@@ -818,14 +823,14 @@ pub contract DelegatorManager {
             DelegatorManager.borrowCurrentEpochSnapshot().upsertDelegatorInfo(nodeID: fromDelegator.nodeID, delegatorID: fromDelegator.id)
             DelegatorManager.borrowCurrentEpochSnapshot().upsertDelegatorInfo(nodeID: toDelegator.nodeID, delegatorID: toDelegator.id)
 
-            emit StrategyTransferCommittedTokens(from: fromNodeID, to: toNodeID, amount: transferAmount)
+            emit StrategyTransferCommittedTokens(from: fromNodeID, to: toNodeID, amount: amount)
         }
 
-        /// Process unstaking request from given delegator
+        /// Process unstaking request from the given delegator
         pub fun processUnstakeRequest(requestUnstakeAmount: UFix64, delegatorUUID: UInt64) {
             pre {
                 FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Cannot process unstake request until protocol epoch syncs"
-                DelegatorManager.requestedToUnstake > 0.0: "No unstaked request to handle"
+                DelegatorManager.requestedToUnstake > 0.0: "No pending unstake request to handle"
             }
             let delegator = DelegatorManager.borrowManagedDelegator(uuid: delegatorUUID)!
             let delegatorInfo = FlowIDTableStaking.DelegatorInfo(nodeID: delegator.nodeID, delegatorID: delegator.id)
@@ -856,7 +861,7 @@ pub contract DelegatorManager {
                 let committedVault <- delegator.withdrawUnstakedTokens(amount: tokensStakedLeft + tokensCommitted - unstakeAmount)
                 delegator.delegateNewTokens(from: <- committedVault)
             }
-            
+
             // update unprocessed unstaked requests
             DelegatorManager.requestedToUnstake = DelegatorManager.requestedToUnstake - unstakeAmount
 
@@ -926,7 +931,7 @@ pub contract DelegatorManager {
             DelegatorManager.approvedNodeIDList = nodeIDs
             DelegatorManager.defaultNodeIDToStake = defaultNodeIDToStake
 
-            emit SetApprovedNodeList(nodeIDs : nodeIDs, defaultNodeIDToStake: defaultNodeIDToStake)
+            emit SetApprovedNodeList(nodeIDs: nodeIDs, defaultNodeIDToStake: defaultNodeIDToStake)
         }
 
         pub fun upsertApprovedNodeID(nodeID: String, weight: UFix64) {
@@ -990,12 +995,6 @@ pub contract DelegatorManager {
         /// Protocol fee vault control
         pub fun borrowProtocolFeeVault(): &FungibleToken.Vault {
             return &DelegatorManager.protocolFeeVault as &FungibleToken.Vault
-        }
-
-        /// Contribute rewards
-        /// TODO: make function public
-        pub fun addReward(rewardedVault: @FlowToken.Vault) {
-            DelegatorManager.totalRewardedVault.deposit(from: <-rewardedVault)
         }
 
         /// Manually register a new delegator resource on the given approved node

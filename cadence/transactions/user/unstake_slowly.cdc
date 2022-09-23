@@ -8,18 +8,18 @@ transaction(stFlowAmount: UFix64) {
         var stFlowVault = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)!
         let inVault <- stFlowVault.withdraw(amount: stFlowAmount) as! @stFlowToken.Vault
         
-        let voucher <- LiquidStaking.unstakeSlowly(stFlowVault: <-inVault)
+        let voucher <- LiquidStaking.unstake(stFlowVault: <-inVault)
         log("--> unstake slowly stFlow ".concat(stFlowAmount.toString()))
         log("--> could get Flow in the future: ".concat(voucher.lockedFlowAmount.toString()))
 
-        var voucherCollectionRef = userAccount.borrow<&LiquidStaking.UnstakingVoucherCollection>(from: LiquidStaking.UnstakingVoucherCollectionPath)
+        var voucherCollectionRef = userAccount.borrow<&LiquidStaking.WithdrawVoucherCollection>(from: LiquidStaking.WithdrawVoucherCollectionPath)
         if voucherCollectionRef == nil {
-            destroy <- userAccount.load<@AnyResource>(from: LiquidStaking.UnstakingVoucherCollectionPath)
-            userAccount.unlink(LiquidStaking.UnstakingVoucherCollectionPublicPath)
+            destroy <- userAccount.load<@AnyResource>(from: LiquidStaking.WithdrawVoucherCollectionPath)
+            userAccount.unlink(LiquidStaking.WithdrawVoucherCollectionPublicPath)
 
-            userAccount.save(<-LiquidStaking.createEmptyUnstakingVoucherCollection(), to: LiquidStaking.UnstakingVoucherCollectionPath)
-            userAccount.link<&{LiquidStaking.UnstakingVoucherCollectionPublic}>(LiquidStaking.UnstakingVoucherCollectionPublicPath, target: LiquidStaking.UnstakingVoucherCollectionPath)
-            voucherCollectionRef = userAccount.borrow<&LiquidStaking.UnstakingVoucherCollection>(from: LiquidStaking.UnstakingVoucherCollectionPath)
+            userAccount.save(<-LiquidStaking.createEmptyWithdrawVoucherCollection(), to: LiquidStaking.WithdrawVoucherCollectionPath)
+            userAccount.link<&{LiquidStaking.WithdrawVoucherCollectionPublic}>(LiquidStaking.WithdrawVoucherCollectionPublicPath, target: LiquidStaking.WithdrawVoucherCollectionPath)
+            voucherCollectionRef = userAccount.borrow<&LiquidStaking.WithdrawVoucherCollection>(from: LiquidStaking.WithdrawVoucherCollectionPath)
         }
         voucherCollectionRef!.deposit(voucher: <-voucher)
     }

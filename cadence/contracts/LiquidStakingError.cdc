@@ -17,7 +17,7 @@ pub contract LiquidStakingError {
         pub case MIGRATE_NOT_OPEN
         pub case STAKING_AUCTION_NOT_IN_PROGRESS
         pub case QUOTE_EPOCH_EXPIRED
-        pub case CANNOT_CASHING_UNSTAKING_VOUCHER
+        pub case CANNOT_CASHOUT_WITHDRAW_VOUCHER
     }
 
     pub fun ErrorEncode(msg: String, err: ErrorCode): String {

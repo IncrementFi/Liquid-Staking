@@ -19,24 +19,21 @@ import DelegatorManager from "./DelegatorManager.cdc"
 pub contract LiquidStaking {
 
     /// Paths
-    pub var UnstakingVoucherCollectionPath: StoragePath
-    pub var UnstakingVoucherCollectionPublicPath: PublicPath
+    pub var WithdrawVoucherCollectionPath: StoragePath
+    pub var WithdrawVoucherCollectionPublicPath: PublicPath
 
     /// Events
-    pub event Stake(flowAmountIn: UFix64, stFlowAmountOut: UFix64, epoch: UInt64)
-    pub event UnstakeSlowly(stFlowAmountIn: UFix64, lockedFlowAmount: UFix64, epoch: UInt64, unlockEpoch: UInt64, voucherUUID: UInt64)
-    pub event UnstakeQuickly(stFlowAmountIn: UFix64, flowAmountOut: UFix64, epoch: UInt64)
+    pub event Stake(flowAmountIn: UFix64, stFlowAmountOut: UFix64, currProtocolEpoch: UInt64)
+    pub event Unstake(stFlowAmountIn: UFix64, lockedFlowAmount: UFix64, currProtocolEpoch: UInt64, unlockProtocolEpoch: UInt64, voucherUUID: UInt64)
+    pub event UnstakeQuickly(stFlowAmountIn: UFix64, flowAmountOut: UFix64, currProtocolEpoch: UInt64)
     pub event MigrateDelegator(uuid: UInt64, migratedFlowIn: UFix64, stFlowOut: UFix64)
-    pub event BurnUnstakingVoucher(uuid: UInt64, cashingFlowAmount: UFix64, cashingEpoch: UInt64)
+    pub event BurnWithdrawVoucher(uuid: UInt64, amountFlowCashedout: UFix64, currProtocolEpoch: UInt64)
 
     /// Reserved parameter fields: {ParamName: Value}
     access(self) let _reservedFields: {String: AnyStruct}
 
-    /// UnstakingVoucher
-    ///
-    /// Voucher for unstaking certificate, has an inner locking period up to two epoch
-    ///
-    pub resource UnstakingVoucher {
+    /// A voucher indicating the amount of locked $flow will be redeemable after certain protocol epoch (inclusive)
+    pub resource WithdrawVoucher {
 
         /// Flow token amount to be unlocked
         pub let lockedFlowAmount: UFix64
@@ -50,43 +47,38 @@ pub contract LiquidStaking {
         }
     }
 
-    /// Stake
-    ///
-    /// FlowToken -> stFlowToken
-    ///
+    /// Deposit and stake $flow in exchange for $stFlow token
     pub fun stake(flowVault: @FlowToken.Vault): @stFlowToken.Vault {
         pre {
-            // Min staking amount check
-            flowVault.balance > LiquidStakingConfig.minStakingAmount: LiquidStakingError.ErrorEncode(msg: "Stake amount must be greater than ".concat(LiquidStakingConfig.minStakingAmount.toString()), err: LiquidStakingError.ErrorCode.INVALID_PARAMETERS)
-            // Staking amount cap check
-            LiquidStakingConfig.stakingCap >= flowVault.balance + DelegatorManager.getTotalValidStakingAmount(): LiquidStakingError.ErrorEncode(msg: "Exceed stake cap: ".concat(LiquidStakingConfig.stakingCap.toString()), err: LiquidStakingError.ErrorCode.EXCEED_STAKE_CAP)
             // Pause check
             LiquidStakingConfig.isStakingPaused == false: LiquidStakingError.ErrorEncode(msg: "Staking is paused", err: LiquidStakingError.ErrorCode.STAKE_NOT_OPEN)
             // Flow blockchain staking state check
-            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot stake if the staking auction isn't in progress", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
-            // Protocol quote staking state check
-            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot stake until the new quote epoch starts", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
+            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot stake as not in flowchain's staking auction period", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
+            // Protocol epoch sync check
+            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot stake until protocol epoch syncs with chain epoch", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
+            // Min staking amount check
+            flowVault.balance >= LiquidStakingConfig.minStakingAmount: LiquidStakingError.ErrorEncode(msg: "Stake amount must be greater than ".concat(LiquidStakingConfig.minStakingAmount.toString()), err: LiquidStakingError.ErrorCode.INVALID_PARAMETERS)
+            // Staking amount cap check
+            LiquidStakingConfig.stakingCap >= flowVault.balance + DelegatorManager.getTotalValidStakingAmount(): LiquidStakingError.ErrorEncode(msg: "Exceed stake cap: ".concat(LiquidStakingConfig.stakingCap.toString()), err: LiquidStakingError.ErrorCode.EXCEED_STAKE_CAP)
         }
 
         let flowAmountToStake = flowVault.balance
         let stFlowAmountToMint = self.calcStFlowFromFlow(flowAmount: flowAmountToStake)
-        
+
         // Stake to committed tokens
         DelegatorManager.depositToCommitted(flowVault: <-flowVault)
 
         // Mint stFlow
         let stFlowVault <- stFlowToken.mintTokens(amount: stFlowAmountToMint)
 
-        emit Stake(flowAmountIn: flowAmountToStake, stFlowAmountOut: stFlowAmountToMint, epoch: FlowEpoch.currentEpochCounter)
+        emit Stake(flowAmountIn: flowAmountToStake, stFlowAmountOut: stFlowAmountToMint, currProtocolEpoch: DelegatorManager.quoteEpochCounter)
 
         return <-stFlowVault
     }
 
-    /// Unstake Slowly
-    ///
-    /// stFlowToken -> UnstakingVoucher
-    ///
-    pub fun unstakeSlowly(stFlowVault: @stFlowToken.Vault): @UnstakingVoucher {
+    /// To unstake (normally) that needs to wait for several epochs before finally withdrawing $flow (principal + interests) from the protocol
+    /// Returns a ticket indicating the amount of $flow redeemable after certain protocol epoch (so you won't get $flow back immediately)
+    pub fun unstake(stFlowVault: @stFlowToken.Vault): @WithdrawVoucher {
         pre {
             // Pause check
             LiquidStakingConfig.isUnstakingPaused == false: LiquidStakingError.ErrorEncode(msg: "Unstaking is paused", err: LiquidStakingError.ErrorCode.UNSTAKE_NOT_OPEN)
@@ -100,81 +92,83 @@ pub contract LiquidStaking {
 
         // Request unstake from staked & committed tokens
         DelegatorManager.requestWithdrawFromStaked(amount: flowAmountToUnstake)
-        
+
         let currentBlockView = getCurrentBlock().view
         let stakingEndView = FlowEpoch.getEpochMetadata(FlowEpoch.currentEpochCounter)!.stakingEndView
+        let protocolEpoch = DelegatorManager.quoteEpochCounter
 
-        var unlockEpoch = FlowEpoch.currentEpochCounter + 2
-        if FlowIDTableStaking.stakingEnabled() {
-            // Before staking auction ends, a window of processing time needs to be saved for handling reserved unstaking requests
-            if currentBlockView + LiquidStakingConfig.windowSizeBeforeStakingEnd >= stakingEndView {
-                unlockEpoch = FlowEpoch.currentEpochCounter + 3
+        // In most of the time, the voucher will be redeemable after 2 protocol epochs
+        var unlockEpoch = protocolEpoch + 2
+        if FlowEpoch.currentEpochCounter > DelegatorManager.quoteEpochCounter {
+            // If unstake() happenes in the short period of time that chain epoch has advanced already but the protocol is waiting to collect 
+            // delegators and update $stFlow price. For safety purpose the unlockEpoch is postponed for an additional epoch
+            unlockEpoch = protocolEpoch + 3
+        } else  {
+            if FlowIDTableStaking.stakingEnabled() == false {
+                // Otherwise if unstake() happenes in flowchain's epoch setup & commit stage, no "real" action is allowed in the underlying layer
+                // So for safety purpose it's postponed for an extra epoch, too
+                // In this case the waiting time <= (2 epochs + epoch setup & commit time). Epoch setup & commit time usually takes less than half a day
+                // See https://developers.flow.com/nodes/staking/schedule#schedule for more details
+                unlockEpoch = protocolEpoch + 3
+            } else if currentBlockView + LiquidStakingConfig.windowSizeBeforeStakingEnd > stakingEndView {
+                // Before staking auction ends, a window of processing time is reserved to handle unprocessed unstake requests
+                // Any unstake() happening within this short period of time will be postponed with an extra epoch for safety purpose
+                // However, even in this case the waiting time <= (2 epochs + safetyWindowSize)
+                unlockEpoch = protocolEpoch + 3
             }
-        } else {
-            // During staking setup & commit stage, all unstaking requests will be reserved until the next epoch
-            unlockEpoch = FlowEpoch.currentEpochCounter + 3
         }
-        
-        let unstakeVoucher <- create UnstakingVoucher(
+
+        let unstakeVoucher <- create WithdrawVoucher(
             lockedFlowAmount: flowAmountToUnstake,
             unlockEpoch: unlockEpoch
         )
 
-        emit UnstakeSlowly(stFlowAmountIn: stFlowAmountToBurn, lockedFlowAmount: flowAmountToUnstake, epoch: FlowEpoch.currentEpochCounter, unlockEpoch: unlockEpoch, voucherUUID: unstakeVoucher.uuid)
+        emit Unstake(stFlowAmountIn: stFlowAmountToBurn, lockedFlowAmount: flowAmountToUnstake, currProtocolEpoch: protocolEpoch, unlockProtocolEpoch: unlockEpoch, voucherUUID: unstakeVoucher.uuid)
 
         return <- unstakeVoucher
     }
 
-    /// Unstake Quickly
-    ///
-    /// Fast unstake from reserved committed tokens
-    /// stFlowToken -> FlowToken
-    ///
+    /// To unstake (quickly) from liquid staking protocol's default staking node, without waiting for several epochs
+    /// You'll immediately get $flow back, as long as the default staking node has enough newly committed tokens from this epoch; otherwise reverts internally.
     pub fun unstakeQuickly(stFlowVault: @stFlowToken.Vault): @FlowToken.Vault {
         pre {
-             // Flow chain unstaking state check
-            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot unstake if the staking auction isn't in progress", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
             // Pause check
             LiquidStakingConfig.isUnstakingPaused == false: LiquidStakingError.ErrorEncode(msg: "Unstaking is paused", err: LiquidStakingError.ErrorCode.UNSTAKE_NOT_OPEN)
-            // Protocol unstaking state check
-            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot stake until the new quote epoch starts", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
+            // Flow chain unstaking state check
+            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot unstake as not in flowchain's staking auction period", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
+            // Protocol epoch sync check
+            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot unstake until protocol epoch syncs with chain epoch", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
         }
 
         let stFlowAmountToBurn = stFlowVault.balance
         let flowAmountToUnstake = self.calcFlowFromStFlow(stFlowAmount: stFlowAmountToBurn)
 
-        //
-        let flowVault <- DelegatorManager.withdrawFromCommitted(amount: flowAmountToUnstake)
-        
-        // Fast unstake fee
-        let feeVault <- flowVault.withdraw(amount: LiquidStakingConfig.quickUnstakeFee * flowAmountToUnstake)
-        DelegatorManager.depositToProtocolFees(flowVault: <-feeVault, purpose: "fast unstake fee")
-        
         // Burn stFlow
         stFlowToken.burnTokens(from: <-stFlowVault)
 
-        emit UnstakeQuickly(stFlowAmountIn: stFlowAmountToBurn, flowAmountOut: flowVault.balance, epoch: FlowEpoch.currentEpochCounter)
-        
+        // Withdraw from default staking node's committed vault
+        let flowVault <- DelegatorManager.withdrawFromCommitted(amount: flowAmountToUnstake)
+
+        // Deduct fast unstake protocol fee
+        let feeVault <- flowVault.withdraw(amount: LiquidStakingConfig.quickUnstakeFee * flowAmountToUnstake)
+        DelegatorManager.depositToProtocolFees(flowVault: <-feeVault, purpose: "fast unstake fee -> protocol fee")
+
+        emit UnstakeQuickly(stFlowAmountIn: stFlowAmountToBurn, flowAmountOut: flowVault.balance, currProtocolEpoch: DelegatorManager.quoteEpochCounter)
+
         return <-flowVault
     }
 
-    /// Unstaking Voucher Cashing
-    ///
-    /// UnstakingVoucher -> FlowToken
-    ///
-    pub fun cashingUnstakingVoucher(voucher: @UnstakingVoucher): @FlowToken.Vault {
+    /// Cashout WithdrawVoucher by burning it for FlowToken
+    pub fun cashoutWithdrawVoucher(voucher: @WithdrawVoucher): @FlowToken.Vault {
         pre {
-            // Waiting all unstaked tokens to be collected
-            DelegatorManager.quoteEpochCounter >= voucher.unlockEpoch: LiquidStakingError.ErrorEncode(msg: "The cashing day hasn't arrived yet", err: LiquidStakingError.ErrorCode.CANNOT_CASHING_UNSTAKING_VOUCHER)
+            DelegatorManager.quoteEpochCounter >= voucher.unlockEpoch: LiquidStakingError.ErrorEncode(msg: "Voucher is not redeemable yet", err: LiquidStakingError.ErrorCode.CANNOT_CASHOUT_WITHDRAW_VOUCHER)
         }
-        
-        let cashingFlowAmount = voucher.lockedFlowAmount
-        
-        let flowVault <-DelegatorManager.withdrawFromUnstaked(amount: cashingFlowAmount)
+        let cashoutAmount = voucher.lockedFlowAmount
 
-        emit BurnUnstakingVoucher(uuid: voucher.uuid, cashingFlowAmount: cashingFlowAmount, cashingEpoch: DelegatorManager.quoteEpochCounter)
+        let flowVault <-DelegatorManager.withdrawFromUnstaked(amount: cashoutAmount)
 
-        // Burn voucher
+        emit BurnWithdrawVoucher(uuid: voucher.uuid, amountFlowCashedout: cashoutAmount, currProtocolEpoch: DelegatorManager.quoteEpochCounter)
+
         destroy voucher
 
         return <-flowVault
@@ -186,16 +180,16 @@ pub contract LiquidStaking {
     ///
     pub fun migrate(delegator: @FlowIDTableStaking.NodeDelegator): @stFlowToken.Vault {
         pre {
-            // Flowchain staking state check
-            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot migrate if the staking auction isn't in progress", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
             // Pause check
             LiquidStakingConfig.isMigratingPaused == false: LiquidStakingError.ErrorEncode(msg: "Migrating is paused", err: LiquidStakingError.ErrorCode.MIGRATE_NOT_OPEN)
-            // Protocol staking state check
-            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot stake until the new quote epoch starts", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
+            // Flowchain staking state check
+            FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot migrate as not in flowchain's staking auction period", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
+            // Protocol epoch sync check
+            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot migrate until protocol epoch syncs with chain epoch", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
         }
-        
+
         let delegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: delegator.nodeID, delegatorID: delegator.id)
-        
+
         assert(LiquidStakingConfig.stakingCap >= delegatroInfo.tokensStaked + DelegatorManager.getTotalValidStakingAmount(), message: "Exceed stake cap")
         assert(delegatroInfo.tokensUnstaking == 0.0, message: "Wait for the previous unstaking processing to complete")
         assert(delegatroInfo.tokensRewarded == 0.0, message: "Please claim the reward before migrating")
@@ -205,40 +199,37 @@ pub contract LiquidStaking {
         assert(delegatroInfo.tokensStaked > 0.0, message: "No staked tokens need to be migrated.")
 
         let stakedFlowToMigrate = delegatroInfo.tokensStaked
-
-        //
         let stFlowAmountToMint = self.calcStFlowFromFlow(flowAmount: stakedFlowToMigrate)
 
         emit MigrateDelegator(uuid: delegator.uuid, migratedFlowIn: stakedFlowToMigrate, stFlowOut: stFlowAmountToMint)
 
+        // Migrate NodeDelegator resource to make it managed by the liquid staking protocol
         DelegatorManager.migrateDelegator(delegator: <-delegator)
 
         // Mint stFlow
-        let stFlowVault <- stFlowToken.mintTokens(amount: stFlowAmountToMint)
-        return <-stFlowVault
+        return <-stFlowToken.mintTokens(amount: stFlowAmountToMint)
     }
 
 
-
-    /// Unstaking voucher collection
-    ///
-    pub resource interface UnstakingVoucherCollectionPublic {
+    /// WithdrawVoucher collection
+    pub resource interface WithdrawVoucherCollectionPublic {
         pub fun getVoucherInfos(): [AnyStruct]
-        pub fun deposit(voucher: @UnstakingVoucher)
+        pub fun deposit(voucher: @WithdrawVoucher)
     }
-    pub resource UnstakingVoucherCollection: UnstakingVoucherCollectionPublic {
-        /// Unstaking voucher list 
-        access(self) var vouchers: @[UnstakingVoucher]
+
+    pub resource WithdrawVoucherCollection: WithdrawVoucherCollectionPublic {
+        /// A list of withdraw vouchers
+        access(self) var vouchers: @[WithdrawVoucher]
 
         destroy() {
             destroy self.vouchers
         }
 
-        pub fun deposit(voucher: @UnstakingVoucher) {
+        pub fun deposit(voucher: @WithdrawVoucher) {
             self.vouchers.append(<-voucher)
         }
 
-        pub fun withdraw(uuid: UInt64): @UnstakingVoucher {
+        pub fun withdraw(uuid: UInt64): @WithdrawVoucher {
             var findIndex: Int? = nil
             var index = 0
             while index < self.vouchers.length {
@@ -271,17 +262,16 @@ pub contract LiquidStaking {
         }
     }
 
-    pub fun createEmptyUnstakingVoucherCollection(): @UnstakingVoucherCollection {
-        return <-create UnstakingVoucherCollection()
+    pub fun createEmptyWithdrawVoucherCollection(): @WithdrawVoucherCollection {
+        return <-create WithdrawVoucherCollection()
     }
-    
+
     /// Calculate exchange amount from Flow to stFlow
-    ///
     pub fun calcStFlowFromFlow(flowAmount: UFix64): UFix64 {
-        let currentEpochSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
+        let currentEpochSnapshot = DelegatorManager.borrowCurrentEpochSnapshot()
         let scaledFlowPrice = currentEpochSnapshot.scaledQuoteFlowStFlow
         let scaledFlowAmount = LiquidStakingConfig.UFix64ToScaledUInt256(flowAmount)
-        
+
         let stFlowAmount = LiquidStakingConfig.ScaledUInt256ToUFix64(
             scaledFlowPrice * scaledFlowAmount / LiquidStakingConfig.scaleFactor
         )
@@ -289,9 +279,8 @@ pub contract LiquidStaking {
     }
 
     /// Calculate exchange amount from stFlow to Flow
-    ///
     pub fun calcFlowFromStFlow(stFlowAmount: UFix64): UFix64 {
-        let currentEpochSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
+        let currentEpochSnapshot = DelegatorManager.borrowCurrentEpochSnapshot()
         let scaledStFlowPrice = currentEpochSnapshot.scaledQuoteStFlowFlow
         let scaledStFlowAmount = LiquidStakingConfig.UFix64ToScaledUInt256(stFlowAmount)
 
@@ -302,8 +291,8 @@ pub contract LiquidStaking {
     }
 
     init() {
-        self.UnstakingVoucherCollectionPath = /storage/unstaking_voucher_collection
-        self.UnstakingVoucherCollectionPublicPath = /public/unstaking_voucher_collection
+        self.WithdrawVoucherCollectionPath = /storage/liquid_staking_withdraw_voucher_collection
+        self.WithdrawVoucherCollectionPublicPath = /public/liquid_staking_withdraw_voucher_collection
         self._reservedFields = {}
     }
 }
