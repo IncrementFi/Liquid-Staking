@@ -268,7 +268,7 @@ pub contract LiquidStaking {
 
     /// Calculate exchange amount from Flow to stFlow
     pub fun calcStFlowFromFlow(flowAmount: UFix64): UFix64 {
-        let currentEpochSnapshot = DelegatorManager.borrowCurrentEpochSnapshot()
+        let currentEpochSnapshot = DelegatorManager.borrowCurrentQuoteEpochSnapshot()
         let scaledFlowPrice = currentEpochSnapshot.scaledQuoteFlowStFlow
         let scaledFlowAmount = LiquidStakingConfig.UFix64ToScaledUInt256(flowAmount)
 
@@ -280,7 +280,7 @@ pub contract LiquidStaking {
 
     /// Calculate exchange amount from stFlow to Flow
     pub fun calcFlowFromStFlow(stFlowAmount: UFix64): UFix64 {
-        let currentEpochSnapshot = DelegatorManager.borrowCurrentEpochSnapshot()
+        let currentEpochSnapshot = DelegatorManager.borrowCurrentQuoteEpochSnapshot()
         let scaledStFlowPrice = currentEpochSnapshot.scaledQuoteStFlowFlow
         let scaledStFlowAmount = LiquidStakingConfig.UFix64ToScaledUInt256(stFlowAmount)
 

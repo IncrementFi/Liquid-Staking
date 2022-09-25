@@ -14,6 +14,6 @@ pub fun main(): AnyStruct {
         "CurrentView": getCurrentBlock().view,
         "DefaultNodeID": DelegatorManager.defaultNodeIDToStake,
         "DefaultDelegatorCommitted": DelegatorManager.getApprovedDelegatorInfoByNodeID(nodeID: DelegatorManager.defaultNodeIDToStake).tokensCommitted,
-        "TotalCommitted": DelegatorManager.borrowCurrentEpochSnapshot().allDelegatorCommitted
+        "TotalCommitted": DelegatorManager.borrowCurrentQuoteEpochSnapshot().allDelegatorCommitted
     }
 }
