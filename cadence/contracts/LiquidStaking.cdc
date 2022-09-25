@@ -174,10 +174,10 @@ pub contract LiquidStaking {
         return <-flowVault
     }
 
-    /// Migrate delegator
-    ///
-    /// NodeDelegator -> stFlow
-    ///
+    /// Migrate staked NodeDelegator resources to get it managed by the liquid staking protocol, and mint corresponding $stFlow back
+    /// This is a useful feature for users who have already staked $flow to nodes. To get the benefits of $stFlow and its ecosystem, they do not have to
+    /// first unstake from nodes (as it usually takes 1~2 epochs and lose staking rewards meanwhile); users can just migrate their NodeDelegator resources
+    /// (represents their staked positions) in and get $stFlow immediately.
     pub fun migrate(delegator: @FlowIDTableStaking.NodeDelegator): @stFlowToken.Vault {
         pre {
             // Pause check
