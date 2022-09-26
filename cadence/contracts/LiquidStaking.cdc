@@ -221,10 +221,6 @@ pub contract LiquidStaking {
         /// A list of withdraw vouchers
         access(self) var vouchers: @[WithdrawVoucher]
 
-        destroy() {
-            destroy self.vouchers
-        }
-
         pub fun deposit(voucher: @WithdrawVoucher) {
             self.vouchers.append(<-voucher)
         }
@@ -257,8 +253,13 @@ pub contract LiquidStaking {
             }
             return voucherInfos
         }
+
         init() {
             self.vouchers <- []
+        }
+
+        destroy() {
+            destroy self.vouchers
         }
     }
 
