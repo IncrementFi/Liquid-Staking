@@ -7,6 +7,6 @@ transaction() {
         let bot <- adminRef.createStrategy()
 
         // TODO: no hardcode path
-        botAcct.save(<-bot, to: /storage/liquidStakingBot)
+        botAcct.save(<-bot, to: DelegatorManager.delegationStrategyPath)
     }
 }

@@ -61,6 +61,7 @@ pub contract DelegatorManager {
 
     /// Paths
     pub let adminPath: StoragePath
+    pub var delegationStrategyPath: StoragePath
 
     /// Events
     pub event NewQuoteEpoch(epoch: UInt64)
@@ -1029,6 +1030,7 @@ pub contract DelegatorManager {
 
     init() {
         self.adminPath = /storage/liquidStakingAdmin
+        self.delegationStrategyPath = /storage/liquidStakingDelegationStrategy
 
         self.approvedNodeIDList = {}
         self.defaultNodeIDToStake = ""
