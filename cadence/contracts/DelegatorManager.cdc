@@ -842,6 +842,11 @@ pub contract DelegatorManager {
         }
 
         /// Process unstaking request from the given delegator
+        ///
+        /// FlowIDTableStaking.DelegatorInfo.requestUnstaking() will withdraw committed tokens first if it has
+        /// Unlike requestUnstaking(), this function will unstake from staked tokens instead of committed tokens
+        /// When all staked tokens are requested to unstake, then take the committed tokens
+        ///
         pub fun processUnstakeRequest(requestUnstakeAmount: UFix64, delegatorUUID: UInt64) {
             pre {
                 FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Cannot process unstake request until protocol epoch syncs"
