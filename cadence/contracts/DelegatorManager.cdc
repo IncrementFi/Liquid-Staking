@@ -603,14 +603,14 @@ pub contract DelegatorManager {
             if stakableNodeList.contains(nodeID) {
                 continue
             }
+            
+            if nodeID == self.defaultNodeIDToStake {
+                self.defaultNodeIDToStake = ""
+            }
 
             self.removeApprovedNodeID(nodeID: nodeID)
 
             emit ApprovedNodeCanceled(nodeID: nodeID)
-
-            if nodeID == self.defaultNodeIDToStake {
-                self.defaultNodeIDToStake = ""
-            }
         }
 
         if self.defaultNodeIDToStake == "" && self.approvedNodeIDList.length > 0 {
@@ -662,6 +662,7 @@ pub contract DelegatorManager {
     access(self) fun removeApprovedNodeID(nodeID: String) {
         pre {
             self.approvedNodeIDList.containsKey(nodeID): "Nonexistent nodeID to remove"
+            self.defaultNodeIDToStake != nodeID: "Default commit node should be reappointed before removing"
         }
         // No delegator on this nodeID
         if self.approvedDelegatorIDs.containsKey(nodeID) == false {
