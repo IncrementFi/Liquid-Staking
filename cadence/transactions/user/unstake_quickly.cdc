@@ -11,9 +11,7 @@ transaction(stFlowAmount: UFix64) {
         let inVault <- stFlowVault.withdraw(amount: stFlowAmount) as! @stFlowToken.Vault
         
         let outVault <- LiquidStaking.unstakeQuickly(stFlowVault: <-inVault)
-        log("--> unstake quickly stFlow ".concat(stFlowAmount.toString()))
-        log("--> get Flow ".concat(outVault.balance.toString()))
-
+        
         flowVault.deposit(from: <-outVault)
     }
 }

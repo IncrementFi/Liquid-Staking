@@ -600,15 +600,6 @@ pub contract DelegatorManager {
         nextEpochSnapshot.setEstimatedReward(estimated: estimatedNextEpochAmount)
 
         emit RewardsInfoCheckpointed(currEpoch: self.quoteEpochCounter, received: currEpochSnapshot.receivedReward, estimated: currEpochSnapshot.estimatedReward, estimateNextReward: nextEpochSnapshot.estimatedReward)
-
-        // TODO: Remove logs for testing
-        log("--> curr protocol epoch: ".concat(currEpochSnapshot.epochCounter.toString()))
-        log("    --> all delegator updated on epoch start, delegator count: ".concat(self.allDelegators.length.toString()))
-        log("    --> total staked amount: ".concat(currEpochSnapshot.allDelegatorStaked.toString()))
-        log("    --> total reward received: ".concat(currEpochSnapshot.receivedReward.toString()))
-        log("    --> estimated reward: ".concat(currEpochSnapshot.estimatedReward.toString()))
-        log("--> next protocol epoch: ".concat(nextEpochSnapshot.epochCounter.toString()))
-        log("    --> estimate reward to be received: ".concat(nextEpochSnapshot.estimatedReward.toString()))
     }
 
     /// Check protocol's approved nodes against FlowIDTableStaking.getStakedNodeIDs()

@@ -9,9 +9,7 @@ transaction(uuid: UInt64) {
         let voucher <-voucherCollection.withdraw(uuid: uuid)
 
         let flowVault <- LiquidStaking.cashoutWithdrawVoucher(voucher: <-voucher)
-        log("--> cashing voucher")
-        log("--> get flow: ".concat(flowVault.balance.toString()))
-
+        
         userAccount.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)!.deposit(from: <-flowVault)
     }
 }

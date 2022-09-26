@@ -9,9 +9,7 @@ transaction(stFlowAmount: UFix64) {
         let inVault <- stFlowVault.withdraw(amount: stFlowAmount) as! @stFlowToken.Vault
         
         let voucher <- LiquidStaking.unstake(stFlowVault: <-inVault)
-        log("--> unstake slowly stFlow ".concat(stFlowAmount.toString()))
-        log("--> could get Flow in the future: ".concat(voucher.lockedFlowAmount.toString()))
-
+        
         var voucherCollectionRef = userAccount.borrow<&LiquidStaking.WithdrawVoucherCollection>(from: LiquidStaking.WithdrawVoucherCollectionPath)
         if voucherCollectionRef == nil {
             destroy <- userAccount.load<@AnyResource>(from: LiquidStaking.WithdrawVoucherCollectionPath)
