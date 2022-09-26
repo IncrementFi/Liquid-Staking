@@ -20,7 +20,7 @@ pub contract LiquidStakingConfig {
 
     /// Max staking amount
     pub var stakingCap: UFix64
-    
+
     // Windows size before auction stage end, left for bots to handle unstaking requests
     pub var windowSizeBeforeStakingEnd: UInt64
 
@@ -34,10 +34,10 @@ pub contract LiquidStakingConfig {
 
     /// 100_000_000.0, i.e. 1.0e8
     pub let ufixScale: UFix64
-    
+
     /// Cut of staking interests reserved as protocol fees
     pub var protocolFee: UFix64
-    
+
     // events
     pub event ConfigMinStakingAmount(newValue: UFix64, oldValue: UFix64)
     pub event ConfigStakingCap(newValue: UFix64, oldValue: UFix64)
@@ -51,24 +51,25 @@ pub contract LiquidStakingConfig {
     /// Reserved parameter fields: {ParamName: Value}
     access(self) let _reservedFields: {String: AnyStruct}
 
-    pub fun calcStakedPayout(stakedAmount: UFix64): UFix64 {
-        let systemTotalStaked = FlowIDTableStaking.getTotalStaked()
-        let epochTokenPayout = FlowIDTableStaking.getEpochTokenPayout()
+    pub fun calcEstimatedStakingPayout(stakedAmount: UFix64): UFix64 {
+        let scaledStakedAmount = self.UFix64ToScaledUInt256(stakedAmount)
+        let scaledSystemTotalStaked = self.UFix64ToScaledUInt256(FlowIDTableStaking.getTotalStaked())
+        let scaledEpochTokenPayout = self.UFix64ToScaledUInt256(FlowIDTableStaking.getEpochTokenPayout())
 
-        if systemTotalStaked == 0.0 {
+        if scaledSystemTotalStaked == 0 {
             return 0.0
         }
 
-        let rewardScale = epochTokenPayout / systemTotalStaked
-        var rewardAmount = stakedAmount * rewardScale
-        let nodeCutAmount = rewardAmount * FlowIDTableStaking.getRewardCutPercentage()
+        var scaledRewardAmount = scaledStakedAmount * scaledEpochTokenPayout / scaledSystemTotalStaked
+        let scaledNodeCutAmount = scaledRewardAmount * self.UFix64ToScaledUInt256(FlowIDTableStaking.getRewardCutPercentage()) / self.scaleFactor
+        // Deducting node cut
+        scaledRewardAmount = scaledRewardAmount - scaledNodeCutAmount
 
-        rewardAmount = rewardAmount - nodeCutAmount
+        let scaledProtocolCutAmount = scaledRewardAmount * self.UFix64ToScaledUInt256(self.protocolFee) / self.scaleFactor
+        // Deducting protocol fees
+        scaledRewardAmount = scaledRewardAmount - scaledProtocolCutAmount
 
-        let protocolCutAmount = rewardAmount * self.protocolFee
-        rewardAmount = rewardAmount - protocolCutAmount
-
-        return rewardAmount    
+        return self.ScaledUInt256ToUFix64(scaledRewardAmount)
     }
 
     /// Utility function to convert a UFix64 number to its scaled equivalent in UInt256 format
@@ -80,7 +81,7 @@ pub contract LiquidStakingConfig {
         let ufixScaledInteger =  integral * UInt256(self.ufixScale) + UInt256(fractional * self.ufixScale)
         return ufixScaledInteger * self.scaleFactor / UInt256(self.ufixScale)
     }
-    
+
     /// Utility function to convert a fixed point number in form of scaled UInt256 back to UFix64 format
     /// e.g. 184467440737095516150000000000 => 184467440737.09551615
     ///
@@ -157,7 +158,7 @@ pub contract LiquidStakingConfig {
         self.scaleFactor = 1_000_000_000_000_000_000
         /// 1.0e8
         self.ufixScale = 100_000_000.0
-        
+
         self._reservedFields = {}
 
         self.account.save(<-create Admin(), to: /storage/liquidStakingConfigAdmin)
