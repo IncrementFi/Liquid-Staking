@@ -27,6 +27,9 @@ pub contract LiquidStakingConfig {
     /// Fee of quick unstaking from reserved committed vault
     pub var quickUnstakeFee: UFix64
 
+    /// Cut of staking interests reserved as protocol fees
+    pub var protocolFee: UFix64
+
     /// Scale factor applied to fixed point number calculation.
     /// Note: The use of scale factor is due to fixed point number in cadence is only precise to 1e-8:
     /// https://docs.onflow.org/cadence/language/values-and-types/#fixed-point-numbers
@@ -35,10 +38,9 @@ pub contract LiquidStakingConfig {
     /// 100_000_000.0, i.e. 1.0e8
     pub let ufixScale: UFix64
 
-    /// Cut of staking interests reserved as protocol fees
-    pub var protocolFee: UFix64
+    pub let adminPath: StoragePath
 
-    // events
+    /// events
     pub event ConfigMinStakingAmount(newValue: UFix64, oldValue: UFix64)
     pub event ConfigStakingCap(newValue: UFix64, oldValue: UFix64)
     pub event ConfigStakingPause(newValue: Bool, oldValue: Bool)
@@ -144,10 +146,10 @@ pub contract LiquidStakingConfig {
     }
 
     init() {
-        self.minStakingAmount = 0.1
-        self.stakingCap = 150_000.0
-        self.quickUnstakeFee = 0.003
-        self.protocolFee = 0.01
+        self.minStakingAmount = 0.1            // 0.1 flow
+        self.stakingCap = 150_000.0            // 150K flow initial cap
+        self.quickUnstakeFee = 0.003           // 0.3%
+        self.protocolFee = 0.01                // 1%
         self.windowSizeBeforeStakingEnd = 400  // 400 block views, about 10 mins
 
         self.isStakingPaused = false
@@ -159,8 +161,10 @@ pub contract LiquidStakingConfig {
         /// 1.0e8
         self.ufixScale = 100_000_000.0
 
+        self.adminPath = /storage/liquidStakingConfigAdmin
+
         self._reservedFields = {}
 
-        self.account.save(<-create Admin(), to: /storage/liquidStakingConfigAdmin)
+        self.account.save(<-create Admin(), to: self.adminPath)
     }
 }
