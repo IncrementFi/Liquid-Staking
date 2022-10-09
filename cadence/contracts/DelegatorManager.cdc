@@ -23,7 +23,7 @@ pub contract DelegatorManager {
 
     /// Weight list of nodes eligible to receive delegates, used by the delegation strategy
     /// {approvedNodeID -> weight}
-    pub var approvedNodeIDList: {String: UFix64}
+    access(contract) var approvedNodeIDList: {String: UFix64}
     
     /// Resource ids of delegator objects on approved nodes
     /// {approvedNodeID -> delegator uuid}
@@ -54,7 +54,7 @@ pub contract DelegatorManager {
 
     /// All epoch snapshot history
     /// {epoch index -> snapshot}
-    pub let epochSnapshotHistory: {UInt64: EpochSnapshot}
+    access(contract) let epochSnapshotHistory: {UInt64: EpochSnapshot}
 
     /// Vault of protocol fees
     access(self) let protocolFeeVault: @FlowToken.Vault
@@ -113,10 +113,10 @@ pub contract DelegatorManager {
 
         /// Snapshotted delegator infos
         /// {nodeID -> {delegatorID -> DelegatorInfo}}
-        pub let delegatorInfoDict: {String: {UInt32: FlowIDTableStaking.DelegatorInfo}}
+        access(self) let delegatorInfoDict: {String: {UInt32: FlowIDTableStaking.DelegatorInfo}}
 
         /// { delegator uuid -> collected? }
-        pub let delegatorCollected: {UInt64: Bool}
+        access(self) let delegatorCollected: {UInt64: Bool}
 
         /// Canceled committed tokens of protocol epoch N is checkpointed in DelegatorManager.epochSnapshotHistory[N+1]
         /// Restake protocol epoch N's canceledCommittedTokens before advancing into protocol epoch N+1
@@ -161,10 +161,6 @@ pub contract DelegatorManager {
             return self.delegatorCollected.length
         }
 
-        access(contract) fun markDelegatorCollected(uuid: UInt64) {
-            self.delegatorCollected.insert(key: uuid, true)
-        }
-
         pub fun isDelegatorCollected(uuid: UInt64): Bool {
             return self.delegatorCollected.containsKey(uuid)
         }
@@ -174,6 +170,18 @@ pub contract DelegatorManager {
                 return nil
             }
             return &self.delegatorInfoDict[nodeID]![delegatorID] as &FlowIDTableStaking.DelegatorInfo?
+        }
+
+        pub fun getNodeIDList(): [String] {
+            return self.delegatorInfoDict.keys
+        }
+
+        pub fun getDelegatorIDListOnNode(nodeID: String): [UInt32] {
+            return self.delegatorInfoDict[nodeID]!.keys
+        }
+
+        access(contract) fun markDelegatorCollected(uuid: UInt64) {
+            self.delegatorCollected.insert(key: uuid, true)
         }
 
         access(contract) fun removeDelegatorInfo(nodeID: String, delegatorID: UInt32) {
@@ -1051,3 +1059,4 @@ pub contract DelegatorManager {
         self.account.save(<-create Admin(), to: self.adminPath)
     }
 }
+ 

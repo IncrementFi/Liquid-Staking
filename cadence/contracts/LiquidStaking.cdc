@@ -82,6 +82,8 @@ pub contract LiquidStaking {
         pre {
             // Pause check
             LiquidStakingConfig.isUnstakingPaused == false: LiquidStakingError.ErrorEncode(msg: "Unstaking is paused", err: LiquidStakingError.ErrorCode.UNSTAKE_NOT_OPEN)
+            // Unstaking amount check
+            stFlowVault.balance > 0.0: LiquidStakingError.ErrorEncode(msg: "Unstake amount must be greater than 0.0", err: LiquidStakingError.ErrorCode.INVALID_PARAMETERS)
         }
 
         let stFlowAmountToBurn = stFlowVault.balance
