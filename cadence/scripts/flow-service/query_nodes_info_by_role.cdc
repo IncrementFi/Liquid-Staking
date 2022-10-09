@@ -47,6 +47,9 @@ pub fun main(role: UInt8): AnyStruct {
         if nodeInfo.role != role && role != 0 {
             continue
         }
+        if nodeInfo.role == 5 {
+            continue
+        }
         
         nodeInfos[index] = NodeInfo(nodeInfo)
         totalNodeStaked = totalNodeStaked + nodeInfos[index]!.tokensStaked
