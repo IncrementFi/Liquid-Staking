@@ -140,6 +140,8 @@ pub contract LiquidStaking {
             FlowIDTableStaking.stakingEnabled(): LiquidStakingError.ErrorEncode(msg: "Cannot unstake as not in flowchain's staking auction period", err: LiquidStakingError.ErrorCode.STAKING_AUCTION_NOT_IN_PROGRESS)
             // Protocol epoch sync check
             FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: LiquidStakingError.ErrorEncode(msg: "Cannot unstake until protocol epoch syncs with chain epoch", err: LiquidStakingError.ErrorCode.QUOTE_EPOCH_EXPIRED)
+            // Unstaking amount check
+            stFlowVault.balance > 0.0: LiquidStakingError.ErrorEncode(msg: "Unstake amount must be greater than 0.0", err: LiquidStakingError.ErrorCode.INVALID_PARAMETERS)
         }
 
         let stFlowAmountToBurn = stFlowVault.balance

@@ -8,9 +8,11 @@ import LiquidStakingConfig from "../../contracts/LiquidStakingConfig.cdc"
 import DelegatorManager from "../../contracts/DelegatorManager.cdc"
 
 pub fun main(userAddr: Address?): {String: AnyStruct} {
-    let currentSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter)
+    let currentProtocolSnapshot = DelegatorManager.borrowCurrentQuoteEpochSnapshot()
     let currentBlockView = getCurrentBlock().view
-    let currentEpochMetadata = FlowEpoch.getEpochMetadata(DelegatorManager.quoteEpochCounter)!
+    // Chain-referenced EpochMetadata
+    let currentEpochMetadata = FlowEpoch.getEpochMetadata(FlowEpoch.currentEpochCounter)!
+    // Protocol-referenced EpochMetadata
     let showEpochMetadata = FlowEpoch.getEpochMetadata(DelegatorManager.quoteEpochCounter)!
 
     var unlockEpoch = FlowEpoch.currentEpochCounter + 2
@@ -48,15 +50,15 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
         "CurrentEpoch": DelegatorManager.quoteEpochCounter,
         "CurrentUnstakeEpoch": unlockEpoch,
 
-        "stFlowFlow": currentSnapshot.scaledQuoteStFlowFlow,
-        "FlowStFlow": currentSnapshot.scaledQuoteFlowStFlow,
+        "stFlowFlow": currentProtocolSnapshot.scaledQuoteStFlowFlow,
+        "FlowStFlow": currentProtocolSnapshot.scaledQuoteFlowStFlow,
 
         "TotalStaked": DelegatorManager.getTotalValidStakingAmount(),
         "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() / 7.0 * 365.0 * (1.0 - FlowIDTableStaking.getRewardCutPercentage()),
 
         "EpochMetadata": {
             "StartView": showEpochMetadata.startView,
-            "StartTimestamp": currentSnapshot.quoteEpochStartTimestamp,
+            "StartTimestamp": currentProtocolSnapshot.quoteEpochStartTimestamp,
             "EndView": showEpochMetadata.endView,
             "CurrentView": currentBlockView,
             "CurrentTimestamp": getCurrentBlock().timestamp,

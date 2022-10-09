@@ -23,7 +23,7 @@ pub contract DelegatorManager {
 
     /// Weight list of nodes eligible to receive delegates, used by the delegation strategy
     /// {approvedNodeID -> weight}
-    access(contract) var approvedNodeIDList: {String: UFix64}
+    access(self) let approvedNodeIDList: {String: UFix64}
     
     /// Resource ids of delegator objects on approved nodes
     /// {approvedNodeID -> delegator uuid}
@@ -54,7 +54,7 @@ pub contract DelegatorManager {
 
     /// All epoch snapshot history
     /// {epoch index -> snapshot}
-    access(contract) let epochSnapshotHistory: {UInt64: EpochSnapshot}
+    access(self) let epochSnapshotHistory: {UInt64: EpochSnapshot}
 
     /// Vault of protocol fees
     access(self) let protocolFeeVault: @FlowToken.Vault
@@ -177,7 +177,7 @@ pub contract DelegatorManager {
         }
 
         pub fun getDelegatorIDListOnNode(nodeID: String): [UInt32] {
-            return self.delegatorInfoDict[nodeID]!.keys
+            return self.delegatorInfoDict[nodeID] == nil ? [] : self.delegatorInfoDict[nodeID]!.keys
         }
 
         access(contract) fun markDelegatorCollected(uuid: UInt64) {
@@ -959,7 +959,9 @@ pub contract DelegatorManager {
                 nodeIDs.containsKey(defaultNodeIDToStake): "Default staking node id must be in the list"
                 DelegatorManager.approvedNodeIDList.length == 0: "Can only be initialized once"
             }
-            DelegatorManager.approvedNodeIDList = nodeIDs
+            for id in nodeIDs.keys {
+                DelegatorManager.approvedNodeIDList.insert(key: id, nodeIDs[id]!)
+            }
             DelegatorManager.defaultNodeIDToStake = defaultNodeIDToStake
 
             emit SetApprovedNodeList(nodeIDs: nodeIDs, defaultNodeIDToStake: defaultNodeIDToStake)
@@ -1059,4 +1061,3 @@ pub contract DelegatorManager {
         self.account.save(<-create Admin(), to: self.adminPath)
     }
 }
- 
