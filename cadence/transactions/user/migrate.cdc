@@ -8,9 +8,8 @@ import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableSta
 transaction(nodeID: String, delegatorID: UInt32) {
     prepare(userAccount: AuthAccount) {
         let flowVault = userAccount.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)!
-        
         let stakingCollectionRef = userAccount.borrow<&FlowStakingCollection.StakingCollection>(from: FlowStakingCollection.StakingCollectionStoragePath)
-            ?? panic("Could not borrow ref to StakingCollection")
+            ?? panic("cannot borrow ref to StakingCollection")
         let migratedDelegator <- stakingCollectionRef.removeDelegator(nodeID: nodeID, delegatorID: delegatorID)!
 
         var delegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: migratedDelegator.nodeID, delegatorID: migratedDelegator.id)
@@ -26,13 +25,12 @@ transaction(nodeID: String, delegatorID: UInt32) {
             stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
         }
 
-        
         if delegatroInfo.tokensCommitted > 0.0 {
             migratedDelegator.requestUnstaking(amount: delegatroInfo.tokensCommitted)
             let committedVault <- migratedDelegator.withdrawUnstakedTokens(amount: delegatroInfo.tokensCommitted)
             // compound stake
             let committedStFlowVault <- LiquidStaking.stake(flowVault: <-(committedVault as! @FlowToken.Vault))
-            
+
             stFlowVaultRef!.deposit(from: <-committedStFlowVault)
         }
 
