@@ -61,7 +61,7 @@ pub contract DelegatorManager {
 
     /// Paths
     pub let adminPath: StoragePath
-    pub var delegationStrategyPath: StoragePath
+    pub let delegationStrategyPath: StoragePath
 
     /// Events
     pub event NewQuoteEpoch(epoch: UInt64)

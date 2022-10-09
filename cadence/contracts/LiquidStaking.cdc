@@ -19,8 +19,8 @@ import DelegatorManager from "./DelegatorManager.cdc"
 pub contract LiquidStaking {
 
     /// Paths
-    pub var WithdrawVoucherCollectionPath: StoragePath
-    pub var WithdrawVoucherCollectionPublicPath: PublicPath
+    pub let WithdrawVoucherCollectionPath: StoragePath
+    pub let WithdrawVoucherCollectionPublicPath: PublicPath
 
     /// Events
     pub event Stake(flowAmountIn: UFix64, stFlowAmountOut: UFix64, currProtocolEpoch: UInt64)
