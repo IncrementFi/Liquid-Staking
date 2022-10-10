@@ -43,20 +43,20 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
     var lockedAccountDelegatorID: UInt32? = nil
     var lockedAccountDelegatorNodeID: String? = nil
     if userAddr != nil {
+        // check locked account delegator
+        let lockedAccountInfoRef = getAccount(userAddr!).getCapability<&LockedTokens.TokenHolder{LockedTokens.LockedAccountInfo}>(LockedTokens.LockedAccountInfoPublicPath).borrow()
+        if lockedAccountInfoRef != nil {
+            lockedAccountBalance = lockedAccountInfoRef!.getLockedAccountBalance()
+            lockedAccountUnlockLimit = lockedAccountInfoRef!.getUnlockLimit()
+            lockedAccountDelegatorNodeID = lockedAccountInfoRef!.getDelegatorNodeID()
+            lockedAccountDelegatorID = lockedAccountInfoRef!.getDelegatorID()
+        }
+        
         let stakingCollectionRef = getAccount(userAddr!).getCapability<&{FlowStakingCollection.StakingCollectionPublic}>(FlowStakingCollection.StakingCollectionPublicPath).borrow()
         if stakingCollectionRef != nil {
             let delegatorInfos = stakingCollectionRef!.getAllDelegatorInfo()
             lockedTokensUsed = stakingCollectionRef!.lockedTokensUsed
             unlockedTokensUsed = stakingCollectionRef!.unlockedTokensUsed
-
-            // check locked account delegator
-            let lockedAccountInfoRef = getAccount(userAddr!).getCapability<&LockedTokens.TokenHolder{LockedTokens.LockedAccountInfo}>(LockedTokens.LockedAccountInfoPublicPath).borrow()
-            if lockedAccountInfoRef != nil {
-                lockedAccountBalance = lockedAccountInfoRef!.getLockedAccountBalance()
-                lockedAccountUnlockLimit = lockedAccountInfoRef!.getUnlockLimit()
-                lockedAccountDelegatorNodeID = lockedAccountInfoRef!.getDelegatorNodeID()
-                lockedAccountDelegatorID = lockedAccountInfoRef!.getDelegatorID()
-            }
 
             for delegatorInfo in delegatorInfos {
                 var migratable = true
