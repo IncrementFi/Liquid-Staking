@@ -61,14 +61,12 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
             for delegatorInfo in delegatorInfos {
                 var migratable = true
                 var isLockedAccount = false
-                var isLockedTokenUsed = false
                 if delegatorInfo.nodeID == lockedAccountDelegatorNodeID && delegatorInfo.id == lockedAccountDelegatorID {
                     migratable = false
                     isLockedAccount = true
                 }
                 if lockedTokensUsed > 0.0 {
                     migratable = false
-                    isLockedTokenUsed = true
                 }
                 if delegatorInfo.tokensUnstaking > 0.0 {
                     migratable = false
@@ -77,7 +75,6 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
                     migratedInfos.append({
                         "migratable": migratable,
                         "isLockedAccount": isLockedAccount,
-                        "isLockedTokenUsed": isLockedTokenUsed,
                         
                         "id": delegatorInfo.id,
                         "nodeID": delegatorInfo.nodeID,
@@ -119,6 +116,12 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
                 "lockedTokensUsed": lockedTokensUsed,
                 "unlockedTokensUsed": unlockedTokensUsed,
                 "migratedInfos": migratedInfos
+            },
+            "LockedAccountInfos": {
+                "lockedAccountBalance": lockedAccountBalance,
+                "lockedAccountUnlockLimit": lockedAccountUnlockLimit,
+                "lockedAccountDelegatorNodeID": lockedAccountDelegatorNodeID,
+                "lockedAccountDelegatorID": lockedAccountDelegatorID
             }
         },
 
