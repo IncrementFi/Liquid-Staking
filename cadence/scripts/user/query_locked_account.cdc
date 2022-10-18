@@ -51,22 +51,24 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
             lockedAccountDelegatorNodeID = lockedAccountInfoRef!.getDelegatorNodeID()
             lockedAccountDelegatorID = lockedAccountInfoRef!.getDelegatorID()
         }
-        
+
         let stakingCollectionRef = getAccount(userAddr!).getCapability<&{FlowStakingCollection.StakingCollectionPublic}>(FlowStakingCollection.StakingCollectionPublicPath).borrow()
         if stakingCollectionRef != nil {
             let delegatorInfos = stakingCollectionRef!.getAllDelegatorInfo()
             lockedTokensUsed = stakingCollectionRef!.lockedTokensUsed
             unlockedTokensUsed = stakingCollectionRef!.unlockedTokensUsed
-
+            
             for delegatorInfo in delegatorInfos {
                 var migratable = true
                 var isLockedAccount = false
+                var isLockedTokenUsed = false
                 if delegatorInfo.nodeID == lockedAccountDelegatorNodeID && delegatorInfo.id == lockedAccountDelegatorID {
                     migratable = false
                     isLockedAccount = true
                 }
                 if lockedTokensUsed > 0.0 {
                     migratable = false
+                    isLockedTokenUsed = true
                 }
                 if delegatorInfo.tokensUnstaking > 0.0 {
                     migratable = false
@@ -75,6 +77,7 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
                     migratedInfos.append({
                         "migratable": migratable,
                         "isLockedAccount": isLockedAccount,
+                        "isLockedTokenUsed": isLockedTokenUsed,
                         
                         "id": delegatorInfo.id,
                         "nodeID": delegatorInfo.nodeID,
@@ -87,10 +90,25 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
                     })
                 }
             }
+        } else if lockedAccountDelegatorID != nil && lockedAccountDelegatorNodeID != nil {
+            let delegatorInfo = FlowIDTableStaking.DelegatorInfo(nodeID: lockedAccountDelegatorNodeID!, delegatorID: lockedAccountDelegatorID!)
+            migratedInfos.append({
+                "migratable": false,
+                "isLockedAccount": true,
+                "isLockedTokenUsed": 0.0,
+                
+                "id": delegatorInfo.id,
+                "nodeID": delegatorInfo.nodeID,
+                "tokensCommitted": delegatorInfo.tokensCommitted,
+                "tokensStaked": delegatorInfo.tokensStaked,
+                "tokensUnstaking": delegatorInfo.tokensUnstaking,
+                "tokensRewarded": delegatorInfo.tokensRewarded,
+                "tokensUnstaked": delegatorInfo.tokensUnstaked,
+                "tokensRequestedToUnstake": delegatorInfo.tokensRequestedToUnstake
+            })
         }
     }
     
-
     return {
         "CurrentEpoch": DelegatorManager.quoteEpochCounter,
         "CurrentUnstakeEpoch": unlockEpoch,
@@ -115,13 +133,8 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
             "MigratedInfos": {
                 "lockedTokensUsed": lockedTokensUsed,
                 "unlockedTokensUsed": unlockedTokensUsed,
-                "migratedInfos": migratedInfos
-            },
-            "LockedAccountInfos": {
-                "lockedAccountBalance": lockedAccountBalance,
                 "lockedAccountUnlockLimit": lockedAccountUnlockLimit,
-                "lockedAccountDelegatorNodeID": lockedAccountDelegatorNodeID,
-                "lockedAccountDelegatorID": lockedAccountDelegatorID
+                "migratedInfos": migratedInfos
             }
         },
 

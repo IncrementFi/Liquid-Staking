@@ -1,19 +1,17 @@
 import LiquidStaking from "../../contracts/LiquidStaking.cdc"
+import LiquidStakingConfig from "../../contracts/LiquidStakingConfig.cdc"
 import stFlowToken from "../../contracts/stFlowToken.cdc"
 import FlowToken from "../../contracts/standard/FlowToken.cdc"
 import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
 import FlowStakingCollection from "../../contracts/standard/emulator/FlowStakingCollection.cdc"
 import FlowIDTableStaking from "../../contracts/standard/emulator/FlowIDTableStaking.cdc"
+import LockedTokens from "../../contracts/standard/emulator/LockedTokens.cdc"
+
 
 transaction(nodeID: String, delegatorID: UInt32) {
     prepare(userAccount: AuthAccount) {
         let flowVault = userAccount.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)!
-        let stakingCollectionRef = userAccount.borrow<&FlowStakingCollection.StakingCollection>(from: FlowStakingCollection.StakingCollectionStoragePath)
-            ?? panic("cannot borrow ref to StakingCollection")
-        let migratedDelegator <- stakingCollectionRef.removeDelegator(nodeID: nodeID, delegatorID: delegatorID)!
-
-        var delegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: migratedDelegator.nodeID, delegatorID: migratedDelegator.id)
-
+        var delegatroInfo = FlowIDTableStaking.DelegatorInfo(nodeID: nodeID, delegatorID: delegatorID)
         var stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
         if stFlowVaultRef == nil {
             userAccount.save(<- stFlowToken.createEmptyVault(), to: stFlowToken.tokenVaultPath)
@@ -25,13 +23,57 @@ transaction(nodeID: String, delegatorID: UInt32) {
             stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
         }
 
+        let stakingCollectionRef = userAccount.borrow<&FlowStakingCollection.StakingCollection>(from: FlowStakingCollection.StakingCollectionStoragePath)
+        // delegator in the locked account
+        let linkedAccountInfoRef = userAccount.getCapability<&LockedTokens.TokenHolder{LockedTokens.LockedAccountInfo}>(LockedTokens.LockedAccountInfoPublicPath).borrow()
+        if linkedAccountInfoRef != nil {
+            if nodeID == linkedAccountInfoRef!.getDelegatorNodeID() && delegatorID == linkedAccountInfoRef!.getDelegatorID() {
+                let tokeHolderRef = userAccount.borrow<&LockedTokens.TokenHolder>(from: LockedTokens.TokenHolderStoragePath)?? panic("TokenHolder is not saved at specified path")
+                let delegatorProxy = tokeHolderRef.borrowDelegator()
+                let flowVaultToStake <- FlowToken.createEmptyVault()
+
+                if delegatroInfo.tokensCommitted > 0.0 {
+                    let committedAmount = delegatroInfo.tokensCommitted
+                    // cancel committed tokens
+                    delegatorProxy.requestUnstaking(amount: committedAmount)
+                    delegatorProxy.withdrawUnstakedTokens(amount: committedAmount)
+                    flowVaultToStake.deposit(from: <- tokeHolderRef.withdraw(amount: committedAmount))
+                }
+                if delegatroInfo.tokensRewarded > 0.0 {
+                    let rewardedAmount = delegatroInfo.tokensRewarded
+                    delegatorProxy.withdrawRewardedTokens(amount: rewardedAmount)
+                    flowVaultToStake.deposit(from: <- tokeHolderRef.withdraw(amount: rewardedAmount))
+                }
+                if delegatroInfo.tokensUnstaked > 0.0 {
+                    let unstakedAmount = delegatroInfo.tokensUnstaked
+                    delegatorProxy.withdrawUnstakedTokens(amount: unstakedAmount)
+                    flowVaultToStake.deposit(from: <- tokeHolderRef.withdraw(amount: unstakedAmount))
+                }
+
+                if flowVaultToStake.balance > 0.0 { // LiquidStakingConfig.minStakingAmount
+                    let stFlowVault <- LiquidStaking.stake(flowVault: <-(flowVaultToStake as! @FlowToken.Vault))
+                    stFlowVaultRef!.deposit(from: <-stFlowVault)
+                } else {
+                    destroy flowVaultToStake
+                }
+                
+                // unstake
+                if delegatroInfo.tokensStaked > 0.0 {
+                    let stakedAmount = delegatroInfo.tokensStaked - delegatroInfo.tokensRequestedToUnstake
+                    delegatorProxy.requestUnstaking(amount: stakedAmount)
+                }
+                return
+            }
+        }
+        
+        // delegator in the user account
+        let migratedDelegator <- stakingCollectionRef!.removeDelegator(nodeID: nodeID, delegatorID: delegatorID)!
+        let flowVaultToStake <- FlowToken.createEmptyVault()
+
         if delegatroInfo.tokensCommitted > 0.0 {
             migratedDelegator.requestUnstaking(amount: delegatroInfo.tokensCommitted)
             let committedVault <- migratedDelegator.withdrawUnstakedTokens(amount: delegatroInfo.tokensCommitted)
-            // compound stake
-            let committedStFlowVault <- LiquidStaking.stake(flowVault: <-(committedVault as! @FlowToken.Vault))
-
-            stFlowVaultRef!.deposit(from: <-committedStFlowVault)
+            flowVaultToStake.deposit(from: <-committedVault)
         }
 
         if delegatroInfo.tokensRequestedToUnstake > 0.0 {
@@ -39,11 +81,18 @@ transaction(nodeID: String, delegatorID: UInt32) {
         }
         if delegatroInfo.tokensRewarded > 0.0 {
             let rewardedVault <-migratedDelegator.withdrawRewardedTokens(amount: delegatroInfo.tokensRewarded)
-            flowVault.deposit(from: <-rewardedVault)
+            flowVaultToStake.deposit(from: <-rewardedVault)
         }
         if delegatroInfo.tokensUnstaked > 0.0 {
             let unstakedVault <-migratedDelegator.withdrawUnstakedTokens(amount: delegatroInfo.tokensUnstaked)
-            flowVault.deposit(from: <-unstakedVault)
+            flowVaultToStake.deposit(from: <-unstakedVault)
+        }
+
+        if flowVaultToStake.balance > 0.0 { // LiquidStakingConfig.minStakingAmount
+            let stFlowVault <- LiquidStaking.stake(flowVault: <-(flowVaultToStake as! @FlowToken.Vault))
+            stFlowVaultRef!.deposit(from: <-stFlowVault)
+        } else {
+            destroy flowVaultToStake
         }
 
         if delegatroInfo.tokensUnstaking + delegatroInfo.tokensStaked == 0.0 {

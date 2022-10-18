@@ -35,49 +35,46 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
     }
 
     // migrate
-    var lockedTokensUsed = 0.0
-    var unlockedTokensUsed = 0.0
+    var linkedAccountTokenUsed = 0.0
+    var unlockedAccountTokensUsed = 0.0
     var migratedInfos: [AnyStruct] = []
-    var lockedAccountBalance = 0.0
-    var lockedAccountUnlockLimit = 0.0
-    var lockedAccountDelegatorID: UInt32? = nil
-    var lockedAccountDelegatorNodeID: String? = nil
+    var linkedAccountBalance = 0.0
+    var linkedAccountUnlockLimit = 0.0
+    var linkedAccountDelegatorID: UInt32? = nil
+    var linkedAccountDelegatorNodeID: String? = nil
     if userAddr != nil {
         // check locked account delegator
-        let lockedAccountInfoRef = getAccount(userAddr!).getCapability<&LockedTokens.TokenHolder{LockedTokens.LockedAccountInfo}>(LockedTokens.LockedAccountInfoPublicPath).borrow()
-        if lockedAccountInfoRef != nil {
-            lockedAccountBalance = lockedAccountInfoRef!.getLockedAccountBalance()
-            lockedAccountUnlockLimit = lockedAccountInfoRef!.getUnlockLimit()
-            lockedAccountDelegatorNodeID = lockedAccountInfoRef!.getDelegatorNodeID()
-            lockedAccountDelegatorID = lockedAccountInfoRef!.getDelegatorID()
+        let linkedAccountInfoRef = getAccount(userAddr!).getCapability<&LockedTokens.TokenHolder{LockedTokens.LockedAccountInfo}>(LockedTokens.LockedAccountInfoPublicPath).borrow()
+        if linkedAccountInfoRef != nil {
+            linkedAccountBalance = linkedAccountInfoRef!.getLockedAccountBalance()
+            linkedAccountUnlockLimit = linkedAccountInfoRef!.getUnlockLimit()
+            linkedAccountDelegatorNodeID = linkedAccountInfoRef!.getDelegatorNodeID()
+            linkedAccountDelegatorID = linkedAccountInfoRef!.getDelegatorID()
         }
 
         let stakingCollectionRef = getAccount(userAddr!).getCapability<&{FlowStakingCollection.StakingCollectionPublic}>(FlowStakingCollection.StakingCollectionPublicPath).borrow()
         if stakingCollectionRef != nil {
             let delegatorInfos = stakingCollectionRef!.getAllDelegatorInfo()
-            lockedTokensUsed = stakingCollectionRef!.lockedTokensUsed
-            unlockedTokensUsed = stakingCollectionRef!.unlockedTokensUsed
+            linkedAccountTokenUsed = stakingCollectionRef!.lockedTokensUsed
+            unlockedAccountTokensUsed = stakingCollectionRef!.unlockedTokensUsed
             
             for delegatorInfo in delegatorInfos {
-                var migratable = true
-                var isLockedAccount = false
-                var isLockedTokenUsed = false
-                if delegatorInfo.nodeID == lockedAccountDelegatorNodeID && delegatorInfo.id == lockedAccountDelegatorID {
-                    migratable = false
-                    isLockedAccount = true
+                if delegatorInfo.nodeID == linkedAccountDelegatorNodeID && delegatorInfo.id == linkedAccountDelegatorID {
+                    continue
                 }
-                if lockedTokensUsed > 0.0 {
-                    migratable = false
-                    isLockedTokenUsed = true
-                }
+                var tokenStakedMigratable = delegatorInfo.tokensStaked
+
                 if delegatorInfo.tokensUnstaking > 0.0 {
-                    migratable = false
+                    tokenStakedMigratable = 0.0
                 }
                 if delegatorInfo.tokensCommitted + delegatorInfo.tokensStaked + delegatorInfo.tokensUnstaking + delegatorInfo.tokensRewarded + delegatorInfo.tokensUnstaked > 0.0 {
                     migratedInfos.append({
-                        "migratable": migratable,
-                        "isLockedAccount": isLockedAccount,
-                        "isLockedTokenUsed": isLockedTokenUsed,
+                        "isLockedAccount": false,
+                        "lockedTokenAmount": linkedAccountTokenUsed,
+
+                        "tokenStakedNeedToUnstake": 0.0,
+                        "tokenStakedMigratable": tokenStakedMigratable,
+                        "tokenStakedNonMigratable": delegatorInfo.tokensStaked - tokenStakedMigratable,
                         
                         "id": delegatorInfo.id,
                         "nodeID": delegatorInfo.nodeID,
@@ -90,22 +87,38 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
                     })
                 }
             }
-        } else if lockedAccountDelegatorID != nil && lockedAccountDelegatorNodeID != nil {
-            let delegatorInfo = FlowIDTableStaking.DelegatorInfo(nodeID: lockedAccountDelegatorNodeID!, delegatorID: lockedAccountDelegatorID!)
-            migratedInfos.append({
-                "migratable": false,
-                "isLockedAccount": true,
-                "isLockedTokenUsed": 0.0,
+        }
+        // delegator in linked account
+        if linkedAccountDelegatorID != nil && linkedAccountDelegatorNodeID != nil {
+            let delegatorInfo = FlowIDTableStaking.DelegatorInfo(nodeID: linkedAccountDelegatorNodeID!, delegatorID: linkedAccountDelegatorID!)
+            let tokensInDelegator = delegatorInfo.tokensCommitted + delegatorInfo.tokensStaked + delegatorInfo.tokensUnstaking + delegatorInfo.tokensRewarded + delegatorInfo.tokensUnstaked
+            if tokensInDelegator > 0.0 {
+                var lockedTokenAmount = 0.0
+                if tokensInDelegator - delegatorInfo.tokensRewarded + linkedAccountBalance + linkedAccountTokenUsed > linkedAccountUnlockLimit {
+                    lockedTokenAmount = tokensInDelegator - delegatorInfo.tokensRewarded + linkedAccountBalance + linkedAccountTokenUsed - linkedAccountUnlockLimit
+                }
+                let tokenStakedNeedToUnstake = delegatorInfo.tokensStaked - delegatorInfo.tokensRequestedToUnstake
+                let tokenStakedMigratable = 0.0
+                let tokenStakedNonMigratable = 0.0
                 
-                "id": delegatorInfo.id,
-                "nodeID": delegatorInfo.nodeID,
-                "tokensCommitted": delegatorInfo.tokensCommitted,
-                "tokensStaked": delegatorInfo.tokensStaked,
-                "tokensUnstaking": delegatorInfo.tokensUnstaking,
-                "tokensRewarded": delegatorInfo.tokensRewarded,
-                "tokensUnstaked": delegatorInfo.tokensUnstaked,
-                "tokensRequestedToUnstake": delegatorInfo.tokensRequestedToUnstake
-            })
+                migratedInfos.append({
+                    "isLockedAccount": true,
+                    "lockedTokenAmount": lockedTokenAmount,
+
+                    "tokenStakedNeedToUnstake": tokenStakedNeedToUnstake,
+                    "tokenStakedMigratable": 0.0,
+                    "tokenStakedNonMigratable": delegatorInfo.tokensStaked,
+                    
+                    "id": delegatorInfo.id,
+                    "nodeID": delegatorInfo.nodeID,
+                    "tokensCommitted": delegatorInfo.tokensCommitted,
+                    "tokensStaked": delegatorInfo.tokensStaked,
+                    "tokensUnstaking": delegatorInfo.tokensUnstaking,
+                    "tokensRewarded": delegatorInfo.tokensRewarded,
+                    "tokensUnstaked": delegatorInfo.tokensUnstaked,
+                    "tokensRequestedToUnstake": delegatorInfo.tokensRequestedToUnstake
+                })
+            }
         }
     }
     
@@ -131,8 +144,11 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
         "User": {
             "UnstakingVouchers": voucherInfos,
             "MigratedInfos": {
-                "lockedTokensUsed": lockedTokensUsed,
-                "unlockedTokensUsed": unlockedTokensUsed,
+                "lockedTokensUsed": linkedAccountTokenUsed,
+                "unlockedTokensUsed": unlockedAccountTokensUsed,
+                "linkedAccountUnlockLimit": linkedAccountUnlockLimit,
+                "linkedAccountDelegatorNodeID": linkedAccountDelegatorNodeID,
+                "linkedAccountDelegatorID": linkedAccountDelegatorID,
                 "migratedInfos": migratedInfos
             }
         },
@@ -140,3 +156,4 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
         "MinStakingAmount": LiquidStakingConfig.minStakingAmount
     }
 }
+ 
