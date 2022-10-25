@@ -18,7 +18,7 @@ pub struct NodeInfo {
 //
     ///// list of delegator IDs for this node operator
     pub let delegatorIDCounter: UInt32
-    pub let delegatorStaked: UFix64
+    pub var delegatorStaked: UFix64
     //pub let tokensRequestedToUnstake: UFix64
     //pub let initialWeight: UInt64
     init(_ nodeInfo:FlowIDTableStaking.NodeInfo) {
@@ -30,7 +30,10 @@ pub struct NodeInfo {
         
         self.tokensStaked = nodeInfo.tokensStaked
         self.delegatorIDCounter = nodeInfo.delegatorIDCounter
-        self.delegatorStaked = 0.0//nodeInfo.totalStakedWithDelegators() - self.tokensStaked
+        self.delegatorStaked = 0.0
+        if self.networkingAddress != "flow-consensus.portto.io:3569" {
+            self.delegatorStaked = nodeInfo.totalStakedWithDelegators() - self.tokensStaked
+        }
 
         //self.tokensRewarded = nodeInfo.tokensRewarded
     }
