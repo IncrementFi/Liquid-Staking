@@ -604,7 +604,7 @@ pub contract DelegatorManager {
         currEpochSnapshot.setReceivedReward(received: self.totalRewardedVault.balance)
 
         // Checkpoint estimated rewards to be received for protocol epoch N+1
-        let estimatedNextEpochAmount = LiquidStakingConfig.calcEstimatedStakingPayout(stakedAmount: currEpochSnapshot.allDelegatorStaked)
+        let estimatedNextEpochAmount = LiquidStakingConfig.calcEstimatedStakingPayout(stakedAmount: nextEpochSnapshot.allDelegatorStaked)
         nextEpochSnapshot.setEstimatedReward(estimated: estimatedNextEpochAmount)
 
         emit RewardsInfoCheckpointed(currEpoch: self.quoteEpochCounter, received: currEpochSnapshot.receivedReward, estimated: currEpochSnapshot.estimatedReward, estimateNextReward: nextEpochSnapshot.estimatedReward)
