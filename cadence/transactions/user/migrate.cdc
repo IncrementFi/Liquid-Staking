@@ -50,11 +50,12 @@ transaction(nodeID: String, delegatorID: UInt32) {
                     flowVaultToStake.deposit(from: <- tokeHolderRef.withdraw(amount: unstakedAmount))
                 }
 
-                if flowVaultToStake.balance > 0.0 { // LiquidStakingConfig.minStakingAmount
+                if flowVaultToStake.balance >= LiquidStakingConfig.minStakingAmount {
                     let stFlowVault <- LiquidStaking.stake(flowVault: <-(flowVaultToStake as! @FlowToken.Vault))
                     stFlowVaultRef!.deposit(from: <-stFlowVault)
                 } else {
-                    destroy flowVaultToStake
+                    // Deposit dust back to user account
+                    flowVault.deposit(from: <-flowVaultToStake)
                 }
                 
                 // unstake
@@ -88,11 +89,12 @@ transaction(nodeID: String, delegatorID: UInt32) {
             flowVaultToStake.deposit(from: <-unstakedVault)
         }
 
-        if flowVaultToStake.balance > 0.0 { // LiquidStakingConfig.minStakingAmount
+        if flowVaultToStake.balance >= LiquidStakingConfig.minStakingAmount {
             let stFlowVault <- LiquidStaking.stake(flowVault: <-(flowVaultToStake as! @FlowToken.Vault))
             stFlowVaultRef!.deposit(from: <-stFlowVault)
         } else {
-            destroy flowVaultToStake
+            // Deposit dust back to user account
+            flowVault.deposit(from: <-flowVaultToStake)
         }
 
         if delegatroInfo.tokensUnstaking + delegatroInfo.tokensStaked == 0.0 {
