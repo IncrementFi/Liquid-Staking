@@ -10,7 +10,7 @@ import FlowIDTableStaking from "./standard/emulator/FlowIDTableStaking.cdc"
 
 pub contract LiquidStakingConfig {
 
-    /// Minmum limit of staking
+    /// Minimum limit of staking
     pub var minStakingAmount: UFix64
 
     /// Pauses
@@ -134,7 +134,7 @@ pub contract LiquidStakingConfig {
                 LiquidStakingConfig.isUnstakingPaused = unstakingPause
             }
             if LiquidStakingConfig.isMigratingPaused != migratingPause {
-                emit ConfigStakingPause(newValue: migratingPause, oldValue: LiquidStakingConfig.isMigratingPaused)
+                emit ConfigMigratingPause(newValue: migratingPause, oldValue: LiquidStakingConfig.isMigratingPaused)
                 LiquidStakingConfig.isMigratingPaused = migratingPause
             }
         }

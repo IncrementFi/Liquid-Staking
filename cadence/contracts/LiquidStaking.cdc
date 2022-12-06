@@ -200,7 +200,7 @@ pub contract LiquidStaking {
         assert(delegatroInfo.tokensUnstaked == 0.0, message: "Please withdraw the unstaked tokens before migrating")
         assert(delegatroInfo.tokensRequestedToUnstake == 0.0, message: "Please cancel the unstake requests before migrating")
         assert(delegatroInfo.tokensCommitted == 0.0, message: "Please cancel the stake requests before migrating")
-        assert(delegatroInfo.tokensStaked > 0.0, message: "No staked tokens need to be migrated.")
+        assert(delegatroInfo.tokensStaked >= LiquidStakingConfig.minStakingAmount, message: "Migrate amount must be greater than ".concat(LiquidStakingConfig.minStakingAmount.toString()))
 
         let stakedFlowToMigrate = delegatroInfo.tokensStaked
         let stFlowAmountToMint = self.calcStFlowFromFlow(flowAmount: stakedFlowToMigrate)

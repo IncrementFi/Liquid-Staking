@@ -37,12 +37,6 @@ pub contract stFlowToken: FungibleToken {
     // Event that is emitted when tokens are destroyed
     pub event TokensBurned(amount: UFix64)
 
-    // Event that is emitted when a new minter resource is created
-    pub event MinterCreated(allowedAmount: UFix64)
-
-    // Event that is emitted when a new burner resource is created
-    pub event BurnerCreated()
-
     // Vault
     //
     // Each user stores an instance of only the Vault in their storage

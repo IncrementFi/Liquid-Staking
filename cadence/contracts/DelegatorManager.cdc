@@ -122,7 +122,7 @@ pub contract DelegatorManager {
         /// Restake protocol epoch N's canceledCommittedTokens before advancing into protocol epoch N+1
         pub var canceledCommittedTokens: UFix64
         /// Canceled staked tokens of protocol epoch N is checkpointed in DelegatorManager.epochSnapshotHistory[N+1]
-        /// Restake protocol epoch N-1's canceledStakedTokens before advancing into next protocol protocol
+        /// Restake protocol epoch N-1's canceledStakedTokens before advancing into next protocol
         pub var canceledStakedTokens: UFix64
 
         /// Tokens that are requested to unstake, will be in unstaking mode in the next protocol epoch
@@ -474,11 +474,12 @@ pub contract DelegatorManager {
     pub fun collectDelegatorsOnEpochStart(startIndex: Int, endIndex: Int) {
         pre {
             FlowEpoch.currentEpochCounter > self.quoteEpochCounter: "No need to collect, chain epoch not advanced yet"
+            startIndex < endIndex: "Invalid index"
         }
 
         // When underlying system's auto reward payment is turned on
         if FlowEpoch.automaticRewardsEnabled() == true {
-            if self.quoteEpochCounter > 0 {
+            if self.quoteEpochCounter > 0 { // TODO the first epoch that opened the auto reward paid
                 assert(
                     FlowEpoch.getEpochMetadata(self.quoteEpochCounter)!.rewardsPaid == true, message:
                         LiquidStakingError.ErrorEncode(
@@ -826,6 +827,7 @@ pub contract DelegatorManager {
         pub fun transferCommittedTokens(fromNodeID: String, toNodeID: String, amount: UFix64) {
             pre {
                 FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Cannot transfer comitted tokens until protocol epoch syncs"
+                fromNodeID != toNodeID: "Cannot transfer tokens among same nodes"
             }
             let fromDelegator = DelegatorManager.borrowApprovedDelegatorFromNode(fromNodeID)
                 ?? panic("cannot borrow from approved delegator of fromNode")
