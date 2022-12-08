@@ -474,7 +474,7 @@ pub contract DelegatorManager {
     pub fun collectDelegatorsOnEpochStart(startIndex: Int, endIndex: Int) {
         pre {
             FlowEpoch.currentEpochCounter > self.quoteEpochCounter: "No need to collect, chain epoch not advanced yet"
-            startIndex < endIndex: "Invalid index"
+            startIndex <= endIndex: "Invalid index"
         }
 
         // When underlying system's auto reward payment is turned on
