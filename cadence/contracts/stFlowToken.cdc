@@ -18,7 +18,6 @@ pub contract stFlowToken: FungibleToken {
 
     // Paths
     pub let tokenVaultPath: StoragePath
-    pub let tokenProviderPath: PrivatePath
     pub let tokenBalancePath: PublicPath
     pub let tokenReceiverPath: PublicPath
 
@@ -140,7 +139,6 @@ pub contract stFlowToken: FungibleToken {
         self.totalSupply = 0.0
 
         self.tokenVaultPath = /storage/stFlowTokenVault
-        self.tokenProviderPath = /private/stFlowTokenProvider
         self.tokenReceiverPath = /public/stFlowTokenReceiver
         self.tokenBalancePath = /public/stFlowTokenBalance
         
