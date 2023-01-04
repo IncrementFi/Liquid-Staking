@@ -83,24 +83,24 @@ pub contract PriceOracleStFlow: OracleInterface {
         pub fun getPriceReaderStoragePath(): StoragePath {
             return PriceOracleStFlow._PriceReaderStoragePath!
         }
+    }
 
-        /// Get reader whitelist of stFlow/USD price feed
-        pub fun getReaderWhiteList(from: UInt64, to: UInt64): [Address] {
-            let readerAddrs = PriceOracleStFlow._ReaderWhiteList.keys
-            let readerLen = UInt64(readerAddrs.length)
-            assert(from <= to && from < readerLen, message: "Index out of range")
-            var _to = to
-            if _to == 0 || _to == UInt64.max || _to >= readerLen {
-                _to = readerLen-1
-            }
-            let list: [Address] = []
-            var cur = from
-            while cur <= _to && cur < readerLen {
-                list.append(readerAddrs[cur])
-                cur = cur + 1
-            }
-            return list
+    /// Get reader whitelist of stFlow/USD price feed
+    pub fun getReaderWhiteList(from: UInt64, to: UInt64): [Address] {
+        let readerAddrs = PriceOracleStFlow._ReaderWhiteList.keys
+        let readerLen = UInt64(readerAddrs.length)
+        assert(from <= to && from < readerLen, message: "Index out of range")
+        var _to = to
+        if _to == 0 || _to == UInt64.max || _to >= readerLen {
+            _to = readerLen-1
         }
+        let list: [Address] = []
+        var cur = from
+        while cur <= _to && cur < readerLen {
+            list.append(readerAddrs[cur])
+            cur = cur + 1
+        }
+        return list
     }
 
     pub resource Admin: OracleInterface.Admin {
