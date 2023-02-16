@@ -25,6 +25,13 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
         unlockEpoch = FlowEpoch.currentEpochCounter + 3
     }
 
+    //let lastProtocolSnapshot = DelegatorManager.borrowEpochSnapshot(at: DelegatorManager.quoteEpochCounter-1) 
+    //let lastApr = lastProtocolSnapshot.receivedReward / (lastProtocolSnapshot.allDelegatorStaked + lastProtocolSnapshot.allDelegatorCommitted - lastProtocolSnapshot.allDelegatorRequestedToUnstake) / 7.0 * 365.0
+    let rewardReceivedNext = LiquidStakingConfig.calcEstimatedStakingPayout(stakedAmount: currentProtocolSnapshot.allDelegatorStaked)
+    let currentTotalStaked = DelegatorManager.getTotalValidStakingAmount()
+    let currentApr = rewardReceivedNext / currentTotalStaked / 7.0 * 365.0
+
+
     // voucher
     var voucherInfos: [AnyStruct]? = nil
     if userAddr != nil {
@@ -129,9 +136,9 @@ pub fun main(userAddr: Address?): {String: AnyStruct} {
         "stFlowFlow": currentProtocolSnapshot.scaledQuoteStFlowFlow,
         "FlowStFlow": currentProtocolSnapshot.scaledQuoteFlowStFlow,
 
-        "TotalStaked": DelegatorManager.getTotalValidStakingAmount(),
-        "APR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() / 7.0 * 365.0 * (1.0 - FlowIDTableStaking.getRewardCutPercentage() * (1.0 - LiquidStakingConfig.protocolFee)),
-
+        "TotalStaked": currentTotalStaked,
+        "UnderlyingAPR": FlowIDTableStaking.getEpochTokenPayout() / FlowIDTableStaking.getTotalStaked() / 7.0 * 365.0 * (1.0 - FlowIDTableStaking.getRewardCutPercentage() * (1.0 - LiquidStakingConfig.protocolFee)),
+        "APR": currentApr,
         "EpochMetadata": {
             "StartView": showEpochMetadata.startView,
             "StartTimestamp": currentProtocolSnapshot.quoteEpochStartTimestamp,
