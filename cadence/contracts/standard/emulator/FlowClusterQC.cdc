@@ -299,7 +299,7 @@ pub contract FlowClusterQC {
             let isValid = publicKey.verify(
                 signature: voteSignature.decodeHex(),
                 signedData: voteMessage.decodeHex(),
-                domainSeparationTag: "FLOW-V0.0_Collector-Vote",
+                domainSeparationTag: "FLOW-Collector_Vote-V00-CS00-with-",
                 hashAlgorithm: HashAlgorithm.KMAC128_BLS_BLS12_381
             )
 
@@ -333,9 +333,19 @@ pub contract FlowClusterQC {
 
     }
 
+    /// Interface that only contains operations that are part
+    /// of the regular automated functioning of the epoch process
+    /// These are accessed by the `FlowEpoch` contract through a capability
+    pub resource interface EpochOperations {
+        pub fun createVoter(nodeID: String, stakingKey: String): @Voter
+        pub fun startVoting(clusters: [Cluster])
+        pub fun stopVoting()
+        pub fun forceStopVoting()
+    }
+
     /// The Admin resource provides the ability to create to Voter resource objects,
     /// begin voting, and end voting for an epoch
-    pub resource Admin {
+    pub resource Admin: EpochOperations {
 
         /// Creates a new Voter resource for a collection node
         /// This function will be publicly accessible in the FlowEpoch

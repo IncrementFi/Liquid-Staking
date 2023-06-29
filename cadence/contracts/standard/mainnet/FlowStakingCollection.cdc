@@ -366,7 +366,7 @@ pub contract FlowStakingCollection {
             
             if self.nodeDelegators[nodeID] != nil {
                 let delegatorRef = (&self.nodeDelegators[nodeID] as &FlowIDTableStaking.NodeDelegator?)!
-                if delegatorRef.id == delegatorID { 
+                if delegatorRef.id == delegatorID {
                     let stakingInfo = FlowIDTableStaking.DelegatorInfo(nodeID: nodeID, delegatorID: delegatorID)
                     let totalStaked = stakingInfo.totalTokensInRecord() - stakingInfo.tokensRewarded
 
@@ -562,12 +562,10 @@ pub contract FlowStakingCollection {
                     panic("Cannot register a delegator for a node that is already being delegated to")
                 }
             }
-            
+
             let tokens <- self.getTokens(amount: amount)
 
-            let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
-
-            nodeDelegator.delegateNewTokens(from: <- tokens)
+            let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID, tokensCommitted: <-tokens)
 
             emit DelegatorAddedToStakingCollection(nodeID: nodeDelegator.nodeID, delegatorID: nodeDelegator.id, amountCommitted: amount, address: self.owner?.address)
 

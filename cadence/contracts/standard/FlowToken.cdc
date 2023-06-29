@@ -79,7 +79,9 @@ pub contract FlowToken: FungibleToken {
         }
 
         destroy() {
-            FlowToken.totalSupply = FlowToken.totalSupply - self.balance
+            if self.balance > 0.0 {
+                FlowToken.totalSupply = FlowToken.totalSupply - self.balance
+            }
         }
     }
 
@@ -130,7 +132,7 @@ pub contract FlowToken: FungibleToken {
         //
         pub fun mintTokens(amount: UFix64): @FlowToken.Vault {
             pre {
-                amount > 0.0: "Amount minted must be greater than zero"
+                amount > UFix64(0): "Amount minted must be greater than zero"
                 amount <= self.allowedAmount: "Amount minted must be less than the allowed amount"
             }
             FlowToken.totalSupply = FlowToken.totalSupply + amount
@@ -165,9 +167,9 @@ pub contract FlowToken: FungibleToken {
         }
     }
 
-    init() {
+    init(adminAccount: AuthAccount) {
         self.totalSupply = 0.0
-        let adminAccount = FlowToken.account
+
         // Create the Vault with the total supply of tokens and save it in storage
         //
         let vault <- create Vault(balance: self.totalSupply)

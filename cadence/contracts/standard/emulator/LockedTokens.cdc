@@ -118,7 +118,6 @@ pub contract LockedTokens {
         }
 
         // FungibleToken.Receiver actions
-
         /// Deposits unlocked tokens to the vault
         pub fun deposit(from: @FungibleToken.Vault) {
             self.depositUnlockedTokens(from: <-from)
@@ -135,7 +134,6 @@ pub contract LockedTokens {
         }
 
         // FungibleToken.Provider actions
-
         /// Withdraws unlocked tokens from the vault
         pub fun withdraw(amount: UFix64): @FungibleToken.Vault {
             return <-self.withdrawUnlockedTokens(amount: amount)
@@ -169,7 +167,6 @@ pub contract LockedTokens {
         }
 
         // LockedTokens.TokenAdmin actions
-
         /// Called by the admin every time a vesting release happens
         pub fun increaseUnlockLimit(delta: UFix64) {
             self.unlockLimit = self.unlockLimit + delta
@@ -177,7 +174,6 @@ pub contract LockedTokens {
         }
 
         // LockedTokens.TokenHolder actions
-
         /// Registers a new node operator with the Flow Staking contract
         /// and commits an initial amount of locked tokens to stake
         pub fun registerNode(nodeInfo: StakingProxy.NodeInfo, amount: UFix64) {
@@ -206,7 +202,7 @@ pub contract LockedTokens {
         /// Registers a new Delegator with the Flow Staking contract
         /// the caller has to specify the ID of the node operator
         /// they are delegating to
-        pub fun registerDelegator(nodeID: String) {
+        pub fun registerDelegator(nodeID: String, amount: UFix64) {
             if let delegator <- self.nodeDelegator <- nil {
                 let delegatorInfo = FlowIDTableStaking.DelegatorInfo(nodeID: delegator.nodeID, delegatorID: delegator.id)
 
@@ -218,7 +214,16 @@ pub contract LockedTokens {
                 destroy delegator
             }
 
-            let delegator <- self.nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
+            let vaultRef = self.vault.borrow()!
+
+            assert(
+                vaultRef.balance >= FlowIDTableStaking.getDelegatorMinimumStakeRequirement(),
+                message: "Must have the delegation minimum FLOW requirement in the locked vault to register a node"
+            )
+
+            let tokens <- vaultRef.withdraw(amount: amount)
+
+            let delegator <- self.nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID, tokensCommitted: <-tokens)
 
             destroy delegator
 
@@ -228,7 +233,7 @@ pub contract LockedTokens {
         pub fun borrowNode(): &FlowIDTableStaking.NodeStaker? {
             let nodeOpt <- self.nodeStaker <- nil
             if let node <- nodeOpt {
-                let nodeRef = &node as? &FlowIDTableStaking.NodeStaker
+                let nodeRef = &node as &FlowIDTableStaking.NodeStaker
                 self.nodeStaker <-! node
                 return nodeRef
             } else {
@@ -299,7 +304,6 @@ pub contract LockedTokens {
         }
 
         // LockedAccountInfo actions
-
         /// Returns the locked account address for this token holder.
         pub fun getLockedAccountAddress(): Address {
             return self.address
@@ -324,7 +328,6 @@ pub contract LockedTokens {
         }
 
         // FungibleToken.Provider actions
-
         /// Withdraws tokens from the locked vault. This will only succeed
         /// if the withdraw amount is less than or equal to the limit
         pub fun withdraw(amount: UFix64): @FungibleToken.Vault {
@@ -345,7 +348,7 @@ pub contract LockedTokens {
         /// They have to provide the node ID for the node they want to delegate to
         pub fun createNodeDelegator(nodeID: String) {
 
-            self.borrowTokenManager().registerDelegator(nodeID: nodeID)
+            self.borrowTokenManager().registerDelegator(nodeID: nodeID, amount: FlowIDTableStaking.getDelegatorMinimumStakeRequirement())
 
             // create a new delegator proxy that can be accessed in transactions
             self.nodeDelegatorProxy = LockedNodeDelegatorProxy(tokenManager: self.tokenManager)
