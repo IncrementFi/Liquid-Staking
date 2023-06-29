@@ -330,7 +330,8 @@ pub contract DelegatorManager {
     ///
     /// Called by LiquidStaking::stake()
     access(account) fun depositToCommitted(flowVault: @FlowToken.Vault) {
-        let defaultDelegator = self.borrowOrCreateApprovedDelegator(nodeID: self.defaultNodeIDToStake)
+        let defaultDelegator = self.borrowApprovedDelegatorFromNode(self.defaultNodeIDToStake)
+            ?? panic("delegator object not found from the defaultNodeToStake")
         // Stake to the committed vault
         defaultDelegator.delegateNewTokens(from: <-flowVault)
 
@@ -348,7 +349,8 @@ pub contract DelegatorManager {
     access(account) fun withdrawFromCommitted(amount: UFix64): @FlowToken.Vault {
         // All committed tokens will be accumulated in the default node's delegator
         // until they are distributed to other delegators by delegation strategy before the end of the staking stage
-        let defaultDelegator = self.borrowOrCreateApprovedDelegator(nodeID: self.defaultNodeIDToStake)
+        let defaultDelegator = self.borrowApprovedDelegatorFromNode(self.defaultNodeIDToStake)
+            ?? panic("delegator object not found from the defaultNodeToStake")
         let defaultDelegatorInfo = FlowIDTableStaking.DelegatorInfo(nodeID: defaultDelegator.nodeID, delegatorID: defaultDelegator.id)
 
         assert(defaultDelegatorInfo.tokensCommitted >= amount, message: "Not enough committed tokens to withdraw")
@@ -653,27 +655,20 @@ pub contract DelegatorManager {
     }
 
     /// Register a new delegator object on an approved staking node
-    access(self) fun registerApprovedDelegator(_ nodeID: String) {
+    access(self) fun registerApprovedDelegator(_ nodeID: String, _ initialCommit: @FungibleToken.Vault) {
         pre {
             FlowIDTableStaking.getStakedNodeIDs().contains(nodeID): "Cannot stake to the inactive node: ".concat(nodeID)
             self.approvedNodeIDList.containsKey(nodeID): "Cannot register delegator on nodes out of approved list"
             !self.approvedDelegatorIDs.containsKey(nodeID): "Delegator object on the given node has already existed"
+            initialCommit.balance >= FlowIDTableStaking.getDelegatorMinimumStakeRequirement(): "Initial commitment for delegator registration < system threshold"
         }
 
-        let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID)
+        let nodeDelegator <- FlowIDTableStaking.registerNewDelegator(nodeID: nodeID, tokensCommitted: <- initialCommit)
         emit RegisterNewDelegator(nodeID: nodeDelegator.nodeID, delegatorID: nodeDelegator.id)
 
         let uuid = nodeDelegator.uuid
         self.approvedDelegatorIDs[nodeDelegator.nodeID] = uuid
         self.allDelegators[uuid] <-! nodeDelegator
-    }
-
-    /// Borrow an existing NodeDelegator object on approvedNode or create a new one
-    access(self) fun borrowOrCreateApprovedDelegator(nodeID: String): &FlowIDTableStaking.NodeDelegator {
-        if !self.approvedDelegatorIDs.containsKey(nodeID) {
-            self.registerApprovedDelegator(nodeID)
-        }
-        return self.borrowApprovedDelegatorFromNode(nodeID)!
     }
 
     access(self) fun removeApprovedNodeID(nodeID: String) {
@@ -1033,8 +1028,8 @@ pub contract DelegatorManager {
         }
 
         /// Manually register a new delegator resource on the given approved node
-        pub fun registerApprovedDelegator(nodeID: String) {
-            DelegatorManager.registerApprovedDelegator(nodeID)
+        pub fun registerApprovedDelegator(nodeID: String, initialCommit: @FungibleToken.Vault) {
+            DelegatorManager.registerApprovedDelegator(nodeID, <-initialCommit)
         }
     }
 
