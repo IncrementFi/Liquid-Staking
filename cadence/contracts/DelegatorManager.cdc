@@ -407,9 +407,11 @@ pub contract DelegatorManager {
 
     /// Restake rewarded tokens to compound rewards.
     access(self) fun compoundRewards() {
-        let rewardVault <- self.totalRewardedVault.withdraw(amount: self.totalRewardedVault.balance)
-        emit CompoundReward(rewardAmount: rewardVault.balance, protocolEpoch: self.quoteEpochCounter)
-        self.depositToCommitted(flowVault: <-(rewardVault as! @FlowToken.Vault))
+        if (self.totalRewardedVault.balance > 0.0) {
+            let rewardVault <- self.totalRewardedVault.withdraw(amount: self.totalRewardedVault.balance)
+            emit CompoundReward(rewardAmount: rewardVault.balance, protocolEpoch: self.quoteEpochCounter)
+            self.depositToCommitted(flowVault: <-(rewardVault as! @FlowToken.Vault))
+        }
     }
 
     /// Restake any tokens staked to nodes canceled in the idtable
@@ -478,7 +480,7 @@ pub contract DelegatorManager {
 
         // When underlying system's auto reward payment is turned on
         if FlowEpoch.automaticRewardsEnabled() == true {
-            if self.quoteEpochCounter > 0 { // TODO the first epoch that opened the auto reward paid
+            if self.quoteEpochCounter > 0 {
                 assert(
                     FlowEpoch.getEpochMetadata(self.quoteEpochCounter)!.rewardsPaid == true, message:
                         LiquidStakingError.ErrorEncode(
@@ -700,6 +702,9 @@ pub contract DelegatorManager {
     /// Contribute additional $flow to rewardedVault for whatever reason (e.g. partnership nodes' node-cut reimbursement, donation, etc.).
     /// This will boost $stFlow price (and also liquid staking apr) in the next epoch
     pub fun addReward(rewardedVault: @FlowToken.Vault) {
+        pre {
+            FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Cannot addReward until protocol epoch syncs"
+        }
         emit ExternalRewardsContributed(amount: rewardedVault.balance)
         self.totalRewardedVault.deposit(from: <-rewardedVault)
     }
@@ -943,7 +948,7 @@ pub contract DelegatorManager {
             }
         }
 
-        // Compound rewards collected in current protocol epoch
+        // Compound rewards collected in previous protocol epoch
         pub fun compoundRewards() {
             pre {
                 FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Cannot compound until protocol epoch syncs"
