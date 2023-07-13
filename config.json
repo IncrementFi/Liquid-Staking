@@ -10,7 +10,7 @@
         }
     },
         
-    "HttpProxy": true,
+    "HttpProxy": false,
 
     "BotConfig": {
         "collectionBatchSize": 10,

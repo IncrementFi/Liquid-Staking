@@ -19,16 +19,20 @@ transaction(flowAmount: UFix64) {
             stFlowVaultRef = userAccount.borrow<&stFlowToken.Vault>(from: stFlowToken.tokenVaultPath)
         }
         
-        let poolCap = getAccount(0x396c0cda3302d8c5).getCapability<&{SwapInterfaces.PairPublic}>(/public/increment_swap_pair).borrow()!
+        let poolCapV1 = getAccount(0x396c0cda3302d8c5).getCapability<&{SwapInterfaces.PairPublic}>(/public/increment_swap_pair).borrow()!
+        let poolCapStable = getAccount(0xc353b9d685ec427d).getCapability<&{SwapInterfaces.PairPublic}>(/public/increment_swap_pair).borrow()!
         
         let estimatedStakeOut = LiquidStaking.calcStFlowFromFlow(flowAmount: flowAmount)
-        let estimatedSwapOut = poolCap.getAmountOut(amountIn: flowAmount, tokenInKey: "A.1654653399040a61.FlowToken")
+        let estimatedSwapOutV1 = poolCapV1.getAmountOut(amountIn: flowAmount, tokenInKey: "A.1654653399040a61.FlowToken")
+        let estimatedSwapOutStable = poolCapStable.getAmountOut(amountIn: flowAmount, tokenInKey: "A.1654653399040a61.FlowToken")
+        let estimatedSwapOut = (estimatedSwapOutStable>estimatedSwapOutV1)? estimatedSwapOutStable:estimatedSwapOutV1
+        let estimatedSwapPoolCap = (estimatedSwapOutStable>estimatedSwapOutV1)? poolCapStable:poolCapV1
 
         if estimatedStakeOut > estimatedSwapOut {
             let outVault <- LiquidStaking.stake(flowVault: <-inVault)
             stFlowVaultRef!.deposit(from: <-outVault)
         } else {
-            let outVault <- poolCap.swap(vaultIn: <- inVault, exactAmountOut: nil)
+            let outVault <- estimatedSwapPoolCap.swap(vaultIn: <- inVault, exactAmountOut: nil)
             stFlowVaultRef!.deposit(from: <-outVault)
         }
     }

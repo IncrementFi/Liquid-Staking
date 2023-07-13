@@ -11,9 +11,9 @@ pub struct NodeInfo {
         
 
     pub let tokensStaked: UFix64
-    //pub let tokensCommitted: UFix64
-    //pub let tokensUnstaking: UFix64
-    //pub let tokensUnstaked: UFix64
+    pub let tokensCommitted: UFix64
+    pub let tokensUnstaking: UFix64
+    pub let tokensUnstaked: UFix64
     //pub let tokensRewarded: UFix64
 //
     ///// list of delegator IDs for this node operator
@@ -29,10 +29,15 @@ pub struct NodeInfo {
         self.stakingKey = nodeInfo.stakingKey
         
         self.tokensStaked = nodeInfo.tokensStaked
+        self.tokensUnstaking = nodeInfo.tokensUnstaking
+        self.tokensCommitted = nodeInfo.tokensCommitted
+        self.tokensUnstaked = nodeInfo.tokensUnstaked
         self.delegatorIDCounter = nodeInfo.delegatorIDCounter
         self.delegatorStaked = 0.0
         if self.networkingAddress != "flow-consensus.portto.io:3569" {
             self.delegatorStaked = nodeInfo.totalStakedWithDelegators() - self.tokensStaked
+        } else {
+            self.delegatorStaked = 24748918.24727006
         }
 
         //self.tokensRewarded = nodeInfo.tokensRewarded
@@ -45,6 +50,7 @@ pub fun main(role: UInt8): AnyStruct {
     let nodeInfos: {Int: NodeInfo} = {}
     var index = 0;
     var totalNodeStaked = 0.0
+    var totalNodeDelegated = 0.0
     for nodeId in nodeIds {
         let nodeInfo = FlowIDTableStaking.NodeInfo(nodeID: nodeId)
         if nodeInfo.role != role && role != 0 {
@@ -56,8 +62,9 @@ pub fun main(role: UInt8): AnyStruct {
         
         nodeInfos[index] = NodeInfo(nodeInfo)
         totalNodeStaked = totalNodeStaked + nodeInfos[index]!.tokensStaked
+        totalNodeDelegated = totalNodeDelegated + nodeInfos[index]!.delegatorStaked
         index = index + 1
     }
-    return [nodeInfos, totalNodeStaked]
+    return [nodeInfos, totalNodeStaked, totalNodeDelegated, totalNodeDelegated+totalNodeStaked]
 }
  
