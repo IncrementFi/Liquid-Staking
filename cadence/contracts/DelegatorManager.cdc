@@ -942,6 +942,14 @@ pub contract DelegatorManager {
                 emit DelegatorRemoved(nodeID: nodeID, delegatorID: delegatorID, uuid: delegatorUUID)
             }
         }
+
+        // Compound rewards collected in current protocol epoch
+        pub fun compoundRewards() {
+            pre {
+                FlowEpoch.currentEpochCounter == DelegatorManager.quoteEpochCounter: "Cannot compound until protocol epoch syncs"
+            }
+            DelegatorManager.compoundRewards()
+        }
     }
 
     /// Protocol Admin
@@ -1028,12 +1036,6 @@ pub contract DelegatorManager {
         pub fun registerApprovedDelegator(nodeID: String, initialCommit: @FungibleToken.Vault) {
             DelegatorManager.registerApprovedDelegator(nodeID, <-initialCommit)
         }
-
-        // Compound rewards collected in current protocol epoch
-        pub fun compoundRewards() {
-            DelegatorManager.compoundRewards()
-        }
-
     }
 
     init() {
