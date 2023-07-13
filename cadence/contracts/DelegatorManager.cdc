@@ -473,7 +473,7 @@ pub contract DelegatorManager {
     ///
     /// This function is made public so anyone can call to keep the protocol moving
     /// This function should be implemented as idempotent
-    pub fun collectDelegatorsOnEpochStart(startIndex: Int, endIndex: Int) {
+    pub fun collectDelegatorsOnEpochStart(startIndex: Int, endIndex: Int, ifAdvanceEpoch: Bool) {
         pre {
             FlowEpoch.currentEpochCounter > self.quoteEpochCounter: "No need to collect, chain epoch not advanced yet"
             startIndex <= endIndex: "Invalid index"
@@ -567,7 +567,7 @@ pub contract DelegatorManager {
 
         // If all delegators have been collected
         let collectedCount = nextEpochSnapshot.getCollectedDelegatorCount()
-        if collectedCount == self.allDelegators.length {
+        if collectedCount == self.allDelegators.length && ifAdvanceEpoch == true {
             self.advanceEpoch()
         }
 
