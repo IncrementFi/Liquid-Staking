@@ -271,9 +271,6 @@ pub contract DelegatorManager {
         // Re-commit redelegated tokens
         self.redelegateTokens()
 
-        // Compound rewards collected in current protocol epoch
-        self.compoundRewards()
-
         // Checkpoint stFlow price for the next epoch
         self.stFlowQuote()
 
@@ -1031,6 +1028,12 @@ pub contract DelegatorManager {
         pub fun registerApprovedDelegator(nodeID: String, initialCommit: @FungibleToken.Vault) {
             DelegatorManager.registerApprovedDelegator(nodeID, <-initialCommit)
         }
+
+        // Compound rewards collected in current protocol epoch
+        pub fun compoundRewards() {
+            DelegatorManager.compoundRewards()
+        }
+
     }
 
     init() {
