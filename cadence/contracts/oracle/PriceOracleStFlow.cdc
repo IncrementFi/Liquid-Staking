@@ -56,6 +56,42 @@ pub contract PriceOracleStFlow: OracleInterface {
             return LiquidStakingConfig.ScaledUInt256ToUFix64(scaledStFlowToFlow) * flowToUsd
         }
 
+        pub fun getRawMedianPrice(): UFix64 {
+            // If no this feed's PriceReader resource, or the reader is not in stFlow/USD feed's whitelist
+            if self.owner == nil || PriceOracleStFlow._ReaderWhiteList.containsKey(self.owner!.address) != true {
+                return 0.0
+            }
+
+            let flowPriceReaderRef = PriceOracleStFlow.account.borrow<&OracleInterface.PriceReader>(from: PriceOracleStFlow._FlowPriceReaderPath)
+            // If no Flow/USD feed's PriceReader resource
+            if flowPriceReaderRef == nil {
+                return 0.0
+            }
+
+            let rawFlowToUsd = flowPriceReaderRef!.getRawMedianPrice()
+            let scaledStFlowToFlow = DelegatorManager.borrowCurrentQuoteEpochSnapshot().scaledQuoteStFlowFlow
+            return LiquidStakingConfig.ScaledUInt256ToUFix64(scaledStFlowToFlow) * rawFlowToUsd
+        }
+
+        pub fun getRawMedianBlockHeight(): UInt64 {
+            // If no this feed's PriceReader resource, or the reader is not in stFlow/USD feed's whitelist
+            if self.owner == nil || PriceOracleStFlow._ReaderWhiteList.containsKey(self.owner!.address) != true {
+                return 0
+            }
+
+            let flowPriceReaderRef = PriceOracleStFlow.account.borrow<&OracleInterface.PriceReader>(from: PriceOracleStFlow._FlowPriceReaderPath)
+            // If no Flow/USD feed's PriceReader resource
+            if flowPriceReaderRef == nil {
+                return 0
+            }
+
+            return flowPriceReaderRef!.getRawMedianBlockHeight()
+        }
+
+        pub fun getPriceIdentifier(): String {
+            return self._PriceIdentifier
+        }
+
         init() {
             self._PriceIdentifier = PriceOracleStFlow._PriceIdentifier!
         }

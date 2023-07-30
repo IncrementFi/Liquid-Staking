@@ -1,28 +1,24 @@
 /**
 
-# Desc This contract is the interface description of PriceOracle.
+# This contract is the interface description of PriceOracle.
   The oracle includes an medianizer, which obtains prices from multiple feeds and calculate the median as the final price.
-
-# Author Increment Labs
-
-  This contract will accept price offers from multiple feeders.
-  Feeders are anonymous for now to protect the providers from extortion.
-  We welcome more price-feeding institutions and partners to join in and build a more decentralized oracle on flow.
-
-  Currently, the use of this oracle is limited to addresses in the whitelist, and applications can be submitted to Increment Labs.
 
 # Structure 
   Feeder1(off-chain) --> PriceFeeder(resource) 3.4$                                               PriceReader1(resource)
   Feeder2(off-chain) --> PriceFeeder(resource) 3.2$ --> PriceOracle(contract) cal median 3.4$ --> PriceReader2(resource)
   Feeder3(off-chain) --> PriceFeeder(resource) 3.6$                                               PriceReader3(resource)
 
-  To apply for the whitelists of Feeders and Readers, pleas follow: https://increment.gitbook.io/public-documentation-1/protocols/decentralized-money-market/oracle
-
 # Robustness
-  1. Median value is the current referee decision strategy.
-  2. _MinFeederNumber determines the minimum number of feeds required to provide a valid price
-  3. The feeder needs to set the price expiration time. If the expiration block height is exceeded, the price will be invalid.
-  4. The oracle will set the price to 0.0 When a valid price cannot be provided. Contract side needs to be able to detect and deal with this abnormal price, such as terminating the transactions.
+  1. Median value is the current aggregation strategy.
+  2. _MinFeederNumber determines the minimum number of feeds required to provide a valid price. As long as there're more than 50% of the nodes are honest the median data is trustworthy.
+  3. The feeder needs to set a price expiration time, after which the price will be invalid (0.0). Dev is responsible to detect and deal with this abnormal data in the contract logic.
+
+#  More price-feeding institutions and partners are welcome to join and build a more decentralized oracle on flow.
+#  To apply to join the Feeder whitelist, please follow: https://docs.increment.fi/protocols/decentralized-price-feed-oracle/apply-as-feeder
+#  On-chain price data can be publicly & freely accessed through the PublicPriceOracle contract.
+
+# Author Increment Labs
+
 */
 
 pub contract interface OracleInterface {
@@ -41,6 +37,16 @@ pub contract interface OracleInterface {
         /// @Return Median price, returns 0.0 if the current price is invalid
         ///
         pub fun getMedianPrice(): UFix64
+
+        pub fun getPriceIdentifier(): String { return "" }
+
+        /// Calculate the *raw* median of the price feed with no filtering of expired data.
+        ///
+        pub fun getRawMedianPrice(): UFix64 { return 0.0 }
+
+        /// Calculate the published block height of the *raw* median data. If it's an even list, it is the smaller one of the two middle value.
+        ///
+        pub fun getRawMedianBlockHeight(): UInt64 { return 0 }
     }
 
     /// Reader related public interfaces opened on PriceOracle smart contract
@@ -80,6 +86,14 @@ pub contract interface OracleInterface {
         /// Get the current feed price, this function can only be called by the PriceOracle contract
         ///
         pub fun fetchPrice(certificate: &OracleCertificate): UFix64
+
+        /// Get the current feed price regardless of whether it's expired or not.
+        ///
+        pub fun getRawPrice(certificate: &OracleCertificate): UFix64 { return 0.0 }
+
+        pub fun getLatestPublishBlockHeight(): UInt64 { return 0 }
+
+        pub fun getExpiredHeightDuration(): UInt64 { return 0 }
     }
 
 
