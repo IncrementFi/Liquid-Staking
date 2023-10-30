@@ -6,7 +6,8 @@ transaction(initialCommitment: UFix64) {
         log("---------> node: set approved list")
         let vaultRef = nodeMgrAcct.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
             ?? panic("cannot borrow reference to Flow Vault")
-        let adminRef = nodeMgrAcct.borrow<&DelegatorManager.Admin>(from: DelegatorManager.adminPath)!
+        let adminRef = nodeMgrAcct.borrow<&DelegatorManager.Admin>(from: DelegatorManager.adminPath)
+            ?? panic("cannot borrow reference to Liquid Staking Admin")
         let ids: {String: UFix64} = {
             "node-1-1": 1.0,
             "node-1-2": 1.0,
