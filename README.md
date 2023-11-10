@@ -16,3 +16,7 @@ Furthermore, LSP stakes these tokens to a set of different node providers for th
 ### Security
 * Audited by [Oak Security](https://www.oaksecurity.io), [report](https://increment-audit.s3.us-west-1.amazonaws.com/Audit+Report+-+IncrementFi+Liquid+Staking.pdf)
 * Bug bounty: [rules](https://docs.increment.fi/miscs/bug-bounty)
+
+
+### Miscs
+* [Coingecko link](https://www.coingecko.com/en/coins/liquid-staked-flow)
